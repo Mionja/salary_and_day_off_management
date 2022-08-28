@@ -1,6 +1,6 @@
   <header class="d-block">
         <nav class="navbar navbar-expand-lg navbar-default bg-dark">
-            <a class="navbar-brand" href="/" style="font-family: 'Oleo Script Swash Caps', 'cursive'; font-size:1.8em;">FlaskApp</a>
+            <a class="navbar-brand text-light" href="/" style="font-family: 'Oleo Script Swash Caps', 'cursive'; font-size:1.8em;">FlaskApp</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggler" aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -8,27 +8,27 @@
             <div class="collapse navbar-collapse" id="navbarToggler">
                 <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
+                        <a class="nav-link text-light" href="/">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/about">About</a>
+                        <a class="nav-link text-light" href="/about">About</a>
                     </li>
                       {% if session.logged_in %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/calendar">Schedule</a>
+                        <a class="nav-link text-light" href="/calendar">Schedule</a>
                     </li>
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/contact">Contacts</a>
+                        <a class="nav-link text-light" href="/contact">Contacts</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav ml-auto ">
                     {% if session.logged_in %}
                         <li class="nav-item">
-                            <a href="/dashboard" class="mr-3" title="Look at your profile"><img src="{{url_for('static', filename='img/user.png')}}" alt="look_profile" width="28"></a>
+                            <a href="/dashboard" class="mr-3 text-light" title="Look at your profile"><img src="{{url_for('static', filename='img/user.png')}}" alt="look_profile" width="28"></a>
                         </li>
                         <li class="nav-item">
-                            <a href="/logout" class="btn btn-sm btn-outline-warning mr-3">Logout</a>
+                            <a href="/logout" class="btn btn-sm btn-outline-warning mr-3" onclick="alert('Are you sure?')">Logout</a>
                         </li>
                     {% else %}
                         <li class="nav-item">

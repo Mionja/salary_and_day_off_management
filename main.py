@@ -1,7 +1,7 @@
 from flask import Flask, render_template, flash, redirect, url_for, session, logging, request
 from flask_mysqldb import MySQL
 from functools import wraps
-from wtforms import Form, StringField, TextAreaField, PasswordField, validators
+from wtforms import Form, StringField, PasswordField, validators
 from passlib.hash import sha256_crypt
 
 app = Flask(__name__)
@@ -41,7 +41,7 @@ def login():
         #Create cursor
         cur = mysql.connection.cursor()
 
-        #Get user by username
+        #Get user by EMAIL(login)
         result = cur.execute("SELECT * FROM employee WHERE email=%s", [login])
 
         if result > 0:
@@ -51,15 +51,9 @@ def login():
 
             #compare Passwords
             if sha256_crypt.verify(password_user, password):
-                name = cur.execute("SELECT * FROM employee WHERE email=%s", [login])
-                data = cur.fetchone()
-                name_user = data['name']
-                id_user = data['id']
                 #can log in
                 session['logged_in'] = True
-                session['id'] = id_user
-                session['name'] = name_user
-                session['email'] = login
+                session['id'] = data['id']
 
                 flash('You are now logged in', 'success')
                 return redirect(url_for('dashboard'))
@@ -88,8 +82,16 @@ def is_logged_in(f):
 @app.route('/dashboard', methods=['GET'])
 @is_logged_in
 def dashboard():
-    return render_template('dashboard.html')
+    # Create cursor
+    cur = mysql.connection.cursor()
 
+    #Get employee by id
+    result = cur.execute("SELECT * FROM employee WHERE id = %s", [session['id']])
+    employee = cur.fetchone()
+
+    return render_template('dashboard.html', employee=employee)
+    #close connection
+    cur.close()
 
 @app.route('/calendar', methods=['GET'])
 @is_logged_in
@@ -110,14 +112,14 @@ class InfoForm(Form):
     email = StringField('Email', [validators.Length(min=5, max=50)])
 
 
-@app.route('/edit_info/<string:id>', methods=['GET'])
+@app.route('/edit_info', methods=['GET', 'POST'])
 @is_logged_in
-def edit_info(id):
+def edit_info():
     #Create cursor
     cur = mysql.connection.cursor()
 
     #get employee by id
-    result = cur.execute("SELECT * FROM employee WHERE id = %s", [id])
+    result = cur.execute("SELECT * FROM employee WHERE id = %s", [session['id']])
 
     employee = cur.fetchone()
 
@@ -135,7 +137,7 @@ def edit_info(id):
         cur = mysql.connection.cursor()
 
         #execute
-        cur.execute("UPDATE employee SET name=%s, email=%s WHERE id=%s", (name, email, id))
+        cur.execute("UPDATE employee SET name=%s, email=%s WHERE id=%s", (name, email, session['id']))
 
         #Commit to db
         mysql.connection.commit()
