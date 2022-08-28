@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+
+{% block title%}Login{% endblock %}
+
+{% block content%}
+
+ <form method="POST" class="form-signin center bordered">
+        <div class="text-center">
+            <img class="mb-4" src="" alt="logo" width="72" height="72">
+        </div>
+        <h4 class="h3 mb-3 font-weight-normal">Login form</h4>
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">@</span>
+            <input type="email" name="login" class="form-control" placeholder="Email address" value="{{request.form.login}}">
+        </div>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text"><img src="{{url_for('static', filename='img/key.png')}}" width="18"></span>
+            <input type="password" name="pswd" class="form-control" placeholder="Password" value="{{request.form.pswd}}">
+        </div>
+
+        <button class="btn btn-lg btn-primary btn-block mt-5" type="submit">Log in</button>
+        <div class="text-center">
+            <p class="mt-5 text-muted">© 2021-2022</p>
+        </div>
+    </form>
+{% endblock %}
