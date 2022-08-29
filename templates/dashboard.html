@@ -13,11 +13,11 @@
                   <div class="card">
                     <div class="card-body">
                       <div class="d-flex flex-column align-items-center text-center">
-                        <img src="{{url_for('static', filename='img/anya.jpg')}}" alt="Admin" class="rounded-circle" width="150">
+                        <img src="{{url_for('static', filename='img/anya.jpg')}}" alt="Admin" class="rounded-circle" onclick="requestFullscreen(this)" width="150">
                         <div class="mt-3">
                           <h4>{{employee.name}}</h4>
-                          <p class="text-secondary mb-1">Full Stack Developer</p>
-                          <p class="text-muted font-size-sm">Bay Area, San Francisco, CA</p>
+                          <p class="text-secondary mb-1">{{status.name}}</p>
+                          <p class="text-muted font-size-sm"> {{employee.address}}</p>
                           <button class="btn btn-primary">Photo</button>
                           <button class="btn btn-outline-primary">Edit links</button>
                         </div>
@@ -77,19 +77,10 @@
                           <h6 class="mb-0">Phone</h6>
                         </div>
                         <div class="col-sm-9 text-secondary">
-                          (239) 816-9029
+                           {{employee.phone}}
                         </div>
                       </div>
 
-                      <hr>
-                      <div class="row">
-                        <div class="col-sm-3">
-                          <h6 class="mb-0">Mobile</h6>
-                        </div>
-                        <div class="col-sm-9 text-secondary">
-                          (320) 380-4539
-                        </div>
-                      </div>
                       <hr>
 
                       <div class="row">
@@ -97,7 +88,7 @@
                           <h6 class="mb-0">Address</h6>
                         </div>
                         <div class="col-sm-9 text-secondary">
-                          Bay Area, San Francisco, CA
+                           {{employee.address}}
                         </div>
                       </div>
                       <hr>
@@ -107,7 +98,17 @@
                           <h6 class="mb-0">Status</h6>
                         </div>
                         <div class="col-sm-9 text-secondary">
-                          CEO
+                          {{status.name}}
+                        </div>
+                      </div>
+                      <hr>
+
+                      <div class="row">
+                        <div class="col-sm-3">
+                          <h6 class="mb-0">Paid day off</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                          {{status.day_off}} days
                         </div>
                       </div>
                       <hr>
@@ -117,17 +118,7 @@
                         <h6 class="mb-0">Monthly salary (NET)</h6>
                         </div>
                         <div class="col-sm-9 text-secondary">
-                            12 000$
-                        </div>
-                    </div>
-                    <hr>
-
-                      <div class="row">
-                        <div class="col-sm-3">
-                        <h6 class="mb-0">Monthly salary (BASIC)</h6>
-                        </div>
-                        <div class="col-sm-9 text-secondary">
-                            12 543$
+                            {{status.salary}}$
                         </div>
                     </div>
                     <hr>
@@ -137,7 +128,7 @@
                         <h6 class="mb-0">Annual salary (NET)</h6>
                         </div>
                         <div class="col-sm-9 text-secondary">
-                            1234567$
+                            {{status.salary * 12}}$
                         </div>
                     </div>
                     <hr>

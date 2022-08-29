@@ -15,6 +15,22 @@
   {{ render_field(form.email, class_="form-control") }}
  </div>
 
+  <div class="form-group">
+   <label class="input-group-addon">Please select the status</label>
+            <select name="select" class="selectpicker form-control">
+              <option value="1">CEO</option>
+              <option value="2">test</option>
+            </select>
+ </div>
+
+  <div class="form-group">
+  {{ render_field(form.address, class_="form-control") }}
+ </div>
+
+ <div class="form-group">
+  {{ render_field(form.phone, class_="form-control") }}
+ </div>
+
  <div class="form-group">
   {{ render_field(form.password, class_="form-control") }}
  </div>

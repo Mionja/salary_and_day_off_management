@@ -86,10 +86,12 @@ def dashboard():
     cur = mysql.connection.cursor()
 
     #Get employee by id
-    result = cur.execute("SELECT * FROM employee WHERE id = %s", [session['id']])
+    employee_data = cur.execute("SELECT * FROM employee WHERE id = %s", [session['id']])
     employee = cur.fetchone()
+    status_data = cur.execute("SELECT * FROM status JOIN employee ON employee.id_status = status.id WHERE employee.id = %s", [session['id']])
+    status = cur.fetchone()
 
-    return render_template('dashboard.html', employee=employee)
+    return render_template('dashboard.html', employee=employee, status=status)
     #close connection
     cur.close()
 
@@ -108,8 +110,10 @@ def logout():
 
 
 class InfoForm(Form):
-    name = StringField('Name', [validators.Length(min=1, max=50)])
+    name = StringField('Name', [validators.Length(min=3, max=50)])
     email = StringField('Email', [validators.Length(min=5, max=50)])
+    address = StringField('Address', [validators.Length(min=10, max=150)])
+    phone = StringField('Phone', [validators.Length(min=10, max=20)])
 
 
 @app.route('/edit_info', methods=['GET', 'POST'])
@@ -129,15 +133,19 @@ def edit_info():
     #populate employee from field
     form.name.data = employee['name']
     form.email.data = employee['email']
+    form.address.data = employee['address']
+    form.phone.data = employee['phone']
 
     if request.method == 'POST' and form.validate():
         name = request.form['name']
         email = request.form['email']
+        address = request.form['address']
+        phone = request.form['phone']
         #Create cursor
         cur = mysql.connection.cursor()
 
         #execute
-        cur.execute("UPDATE employee SET name=%s, email=%s WHERE id=%s", (name, email, session['id']))
+        cur.execute("UPDATE employee SET name=%s, email=%s, address=%s, phone=%s WHERE id=%s", (name, email, address, phone, session['id']))
 
         #Commit to db
         mysql.connection.commit()
@@ -151,8 +159,10 @@ def edit_info():
 
 
 class AddForm(Form):
-    name = StringField('Name', [validators.Length(min=1, max=50)])
+    name = StringField('Name', [validators.Length(min=3, max=100)])
     email = StringField('Email', [validators.Length(min=5, max=50)])
+    address = StringField('Address', [validators.Length(min=10, max=150)])
+    phone = StringField('Phone', [validators.Length(min=10, max=20)])
     password = PasswordField('Password', [
         validators.DataRequired(),
         validators.EqualTo('confirm', message='Passwords do not match')
@@ -166,12 +176,14 @@ def add():
     if request.method == 'POST' and form.validate():
         name = form.name.data
         email = form.email.data
+        address = form.address.data
+        phone = form.phone.data
         password = sha256_crypt.encrypt(str(form.password.data))
 
         #Create cursor
         cur = mysql.connection.cursor()
 
-        cur.execute("INSERT INTO employee(name, email, password) VALUES(%s, %s, %s)", (name, email, password))
+        cur.execute("INSERT INTO employee(name, email,address, phone, password, id_status) VALUES(%s, %s, %s,%s,%s, 2)", (name, email, address, phone, password))
 
         #commit to db
         mysql.connection.commit()
@@ -179,7 +191,7 @@ def add():
         #close the connection
         cur.close()
 
-        flash("An employee was added and can log in", 'success')
+        flash("An employee with status was added and can log in", 'success')
         return redirect(url_for('add'))
     return render_template('add.html', form=form)
 
