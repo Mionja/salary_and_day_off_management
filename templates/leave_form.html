@@ -1,0 +1,54 @@
+{% extends 'layout.html' %}
+
+{% block title%}Leave{% endblock %}
+
+{% block head%}<link rel="stylesheet" href="{{url_for('static', filename='css/main.css')}}">{% endblock %}
+
+{% block content%}
+
+ <div class="page-wrapper pt-5 p-b-100 font-robo">
+        <div class="wrapper wrapper--w960">
+            <div class="card card-2">
+                <div class="card-heading"></div>
+                <div class="card-body">
+                    <h2 class="title">Leave Application</h2>
+                    <form method="POST">
+
+                        <div class="row">
+                            <div class="col-5">
+                                <div class="input-group">
+                                    <input class="input--style-2" type="date" name="start" required>
+                                </div>
+                            </div>
+                            <div class="col-1 mt-4">--</div>
+                            <div class="col-6">
+                                <div class="input-group">
+                                    <input class="input--style-2" type="date"name="end" required>
+                                </div>
+                            </div>
+                        </div>
+
+                         <div class="mb-3 mt-3">
+                             <span class="mb-3 mr-3" style="font-size:16px">Description of leave:</span>
+                             <select name="reason" class="input--style-2" required>
+                                    <option value="casual" selected>Casual leave</option>
+                                    <option value="sick">Sick leave</option>
+                                    <option value="maternity">Maternity</option>
+                                    <option value="0">Other</option>
+                             </select>
+                        </div>
+
+                          <textarea class="form-control mt-5" placeholder="Other reason" name="o_reason"></textarea>
+
+                        <div class="input-group mt-5">
+                            <input class="input--style-2" placeholder="Contact during leave" name="contact" required>
+                        </div>
+                        <button type="submit" class="btn btn--green btn--radius mt-5">Apply</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="{{url_for('static', filename='js/global.js')}}"></script>
+{% endblock %}

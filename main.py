@@ -158,6 +158,61 @@ def edit_info():
     return render_template('edit_info.html', form=form)
 
 
+@app.route('/leave', methods=['GET', 'POST'])
+@is_logged_in
+def leave():
+    return render_template('leave_form.html')
+
+class LinkForm(Form):
+    website = StringField('Website', [validators.Length(min=5)])
+    github = StringField('github', [validators.Length(min=5)])
+    twitter = StringField('twitter', [validators.Length(min=5)])
+    facebook = StringField('facebook', [validators.Length(min=5)])
+
+
+@app.route('/edit_links', methods=['GET', 'POST'])
+@is_logged_in
+def edit_links():
+    #Create cursor
+    cur = mysql.connection.cursor()
+
+    #get employee by id
+    result = cur.execute("SELECT * FROM employee WHERE id = %s", [session['id']])
+
+    employee = cur.fetchone()
+
+    #get form
+    form = LinkForm(request.form)
+
+    #populate employee from field
+    form.website.data = employee['website']
+    form.github.data = employee['github']
+    form.twitter.data = employee['twitter']
+    form.facebook.data = employee['facebook']
+
+    if request.method == 'POST' and form.validate():
+        website = request.form['website']
+        github = request.form['github']
+        twitter = request.form['twitter']
+        facebook = request.form['facebook']
+
+        #Create cursor
+        cur = mysql.connection.cursor()
+
+        #execute
+        cur.execute("UPDATE employee SET website=%s, github=%s, twitter=%s, facebook=%s WHERE id=%s", (website, github, twitter, facebook, session['id']))
+
+        #Commit to db
+        mysql.connection.commit()
+
+        #close connection
+        cur.close()
+
+        flash('Peronnal links edited', 'success')
+        return redirect(url_for('dashboard'))
+    return render_template('edit_links.html', form=form)
+
+
 class AddForm(Form):
     name = StringField('Name', [validators.Length(min=3, max=100)])
     email = StringField('Email', [validators.Length(min=5, max=50)])
