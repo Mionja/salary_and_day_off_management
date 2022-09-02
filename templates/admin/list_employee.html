@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+
+{% block title%}Employees{% endblock %}
+
+{% block content%}
+<h1 class="text-center">List of employees</h1>
+<a href="add_employee" class="float-right">Add new</a>
+<table class="mt-5 table">
+    {%for employee in employees%}
+    <tr>
+        <td><img src="" alt="photo" width="30"></td>
+        <td>
+            <form action="{{url_for('get_detail_employee')}}" method="post">
+                <input type="hidden" name="id" value="{{employee.id}}">
+                <input type="submit" class="text-dark" style="border:none;" value="{{employee.name}}">
+            </form>
+        </td>
+        <td>{{employee.email}}</td>
+        <td>{{employee.st_name}}</td>
+    </tr>
+    {%endfor%}
+</table>
+
+
+{% endblock %}

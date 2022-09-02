@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 
-{% block title%}Dashboard{% endblock %}
+{% block title%}Employee{% endblock %}
 {% block head%}<link rel="stylesheet" href="{{url_for('static', filename='css/app.css')}}">{% endblock %}
 
 {% block content%}
@@ -18,8 +18,7 @@
                           <h4>{{employee.name}}</h4>
                           <p class="text-secondary mb-1">{{employee.s_name}}</p>
                           <p class="text-muted font-size-sm"> {{employee.address}}</p>
-                          <button class="btn btn-primary">Photo</button>
-                          <a href="" class="btn btn-outline-primary">Edit links</a>
+                          <button class="btn btn-outline-primary">Send message</button>
                         </div>
                       </div>
                     </div>
@@ -142,12 +141,6 @@
                         </div>
                     </div>
                     <hr>
-
-                      <div class="row">
-                        <div class="col-sm-12">
-                          <a class="btn btn-info" href="/edit_info">Edit</a>
-                        </div>
-                      </div>
                     </div>
                   </div>
 
@@ -160,78 +153,4 @@
             </div>
         </div>
 
-        <div class="container bootstrap snippets bootdeys">
-            <div class="col-md-9">
-                <div class="timeline-centered timeline-sm">
-                    <article class="timeline-entry">
-                        <div class="timeline-entry-inner">
-                            <time datetime="2014-01-10T03:45" class="timeline-time"><span>31/12/20</span><span>Today</span></time>
-                            <div class="timeline-icon bg-orange"><i class="fa fa-paper-plane"></i></div>
-                          <div class="timeline-label bg-orange"><h4 class="timeline-title">About this month salary</h4>
-
-                            <p><img src="https://via.placeholder.com/45x45/" alt="" class="timeline-img pull-left">
-                                Total amount:<a href="#salary" class="text-light"> {{employee.s_salary}}$</a> <br>
-                                <hr>
-
-                                Taken in advance: {{employee.s_salary /3}}$ <br>
-                                Remnant amount: {{employee.s_salary*(2/3)}}$
-
-                            </p></div>
-                        </div>
-                    </article>
-                    <article class="timeline-entry left-aligned">
-                        <div class="timeline-entry-inner">
-                            <time datetime="2014-01-10T03:45" class="timeline-time"><span>04/03/2019</span><span>For 3 days</span></time>
-                            <div class="timeline-icon bg-green"><i class="fa fa-group"></i></div>
-                            <div class="timeline-label bg-green">
-                                <h4 class="timeline-title">Day off this month</h4>
-                                <p>{%for leave in leaves%}
-                                        From {{leave.start}} to {{leave.end}}<br>
-                                    {%endfor%}
-                                    <br>
-                                    <br>
-                                    {% if n_leave == 0 %}
-                                    You haven't asked for a leave yet
-                                    {% else %}
-                                    You asked for: {{n_leave}} days of leave in total
-                                    {% endif %}
-                                <hr>
-                                    Always remember that if you take more than {{employee.s_day_off}} days off per month, it will be deduced on your salary
-                                </p>
-                                <a href="/leave" class="btn btn-warning mt-3">Ask for a leave</a>
-                            </div>
-                        </div>
-                    </article>
-                    <article class="timeline-entry">
-                        <div class="timeline-entry-inner">
-                            <time datetime="2014-01-09T13:22" class="timeline-time"><span>04/03/2013</span><span>8:20 PM</span></time>
-                            <div class="timeline-icon bg-violet"><i class="fa fa-exclamation"></i></div>
-                                <div class="timeline-label"><h4 class="timeline-title">Next month salary</h4>
-                            <pre>
-Amount: {{employee.s_salary}}$
-                                <hr>
-Bonus:
-    H_sup:0$
-Minus:
-    Day off: 200$ deduced
-                            </pre></div>
-                        </div>
-                        <div class="timeline-entry-inner">
-                                <div class="timeline-icon"><i class="fa fa-plus"></i></div>
-                        </div>
-                    </article>
-                </div>
-            </div>
-        </div>
-<table class="table table-light table-stripped" id="salary">
-    <thead>
-        <th>Basic salary</th>
-        <th>IRSA(3.5%)</th>
-        <th>Cnaps(1.5%)</th>
-        <th>Ostie(1.5%)</th>
-        <th>Leave without sold</th>
-        <th>H_sup</th>
-        <th>Final</th>
-    </thead>
-</table>
 {% endblock %}

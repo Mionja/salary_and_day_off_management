@@ -1,0 +1,32 @@
+{% extends 'layout.html' %}
+
+{% block title%}Leave{% endblock %}
+
+{% block content%}
+    <h1>List of leave appliances this month</h1>
+<table class="table table-stripped table-hover border">
+    <thead class="bg-info">
+        <tr>
+            <td>Name</td>
+            <td>Start date</td>
+            <td>End date</td>
+            <td>Reason</td>
+        </tr>
+    </thead>
+    <tbody>
+    {%for employee in employees%}
+    <tr>
+        <td>
+            <form action="{{url_for('get_detail_employee')}}" method="post">
+                <input type="hidden" name="id" value="{{employee.id}}">
+                <input type="submit" class="text-dark" style="border:none;" value="{{employee.name}}">
+            </form>
+        </td>
+        <td>{{employee.start}}</td>
+        <td>{{employee.end}}</td>
+        <td>{{employee.reason}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

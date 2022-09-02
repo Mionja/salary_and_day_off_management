@@ -7,20 +7,35 @@
 
             <div class="collapse navbar-collapse" id="navbarToggler">
                 <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link text-light" href="/">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-light" href="/about">About</a>
-                    </li>
-                      {% if session.logged_in %}
-                    <li class="nav-item">
-                        <a class="nav-link text-light" href="/calendar">Schedule</a>
-                    </li>
+                    {% if session.admin_logged %}
+                         <li class="nav-item">
+                            <a class="nav-link text-light" href="list_employee">Employees</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="list_leave">Leave_appliance</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="calendar_admin">Schedule</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="notifications">Notifications</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="/">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="/about">About</a>
+                        </li>
+                          {% if session.logged_in %}
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="/calendar">Schedule</a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link text-light" href="/contact">Contacts</a>
+                        </li>
                     {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link text-light" href="/contact">Contacts</a>
-                    </li>
                 </ul>
                 <ul class="navbar-nav ml-auto ">
                     {% if session.logged_in %}
@@ -29,6 +44,13 @@
                         </li>
                         <li class="nav-item">
                             <a href="/logout" class="btn btn-sm btn-outline-warning mr-3" onclick="alert('Are you sure?')">Logout</a>
+                        </li>
+                    {% elif session.admin_logged %}
+                        <li class="nav-item">
+                            <a href="/admin/dashboard" class="mr-3 text-light" title="Look at your profile"><img src="{{url_for('static', filename='img/user.png')}}" alt="look_profile" width="28"></a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/logout" class="btn btn-sm btn-outline-warning mr-3" onclick="alert('Are you sure?')">Logout</a>
                         </li>
                     {% else %}
                         <li class="nav-item">

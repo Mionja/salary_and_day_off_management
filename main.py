@@ -3,6 +3,7 @@ from flask_mysqldb import MySQL
 from functools import wraps
 from wtforms import Form, StringField, PasswordField, validators
 from passlib.hash import sha256_crypt
+from datetime import datetime, date
 
 app = Flask(__name__)
 
@@ -15,7 +16,7 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 #init MYSQL
 mysql = MySQL(app)
 
-
+#-----------------------------------------For any user----------------------------------------
 @app.route('/', methods=['GET'])
 def home():
     return render_template('home.html')
@@ -26,8 +27,27 @@ def about():
     return render_template('about.html')
 
 
-@app.route('/contact', methods=['GET'])
+@app.route('/contact', methods=['GET', 'POST'])
 def contact():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        subject = request.form['subject']
+        message = request.form['message']
+
+        #Create cursor
+        cur = mysql.connection.cursor()
+
+        cur.execute("INSERT INTO notifications(name, email,subject, message) VALUES(%s, %s, %s,%s)", (name, email, subject, message))
+
+        #commit to db
+        mysql.connection.commit()
+
+        #close the connection
+        cur.close()
+
+        flash("Thank you for contacting us, your message has been received", 'success')
+        return redirect(url_for('contact'))
     return render_template('contact.html')
 
 
@@ -44,6 +64,10 @@ def login():
         #Get user by EMAIL(login)
         result = cur.execute("SELECT * FROM employee WHERE email=%s", [login])
 
+        # Data admin
+        email_admin = 'mionja@gmail.com'
+        pass_admin = '123'
+
         if result > 0:
             #get stored hash
             data = cur.fetchone()
@@ -51,6 +75,7 @@ def login():
 
             #compare Passwords
             if sha256_crypt.verify(password_user, password):
+                session.clear()
                 #can log in
                 session['logged_in'] = True
                 session['id'] = data['id']
@@ -60,14 +85,27 @@ def login():
             else:
                 error = 'invalid password'
                 return render_template('login.html', error=error)
-                cur.close()
+
+        elif login == email_admin:
+            # compare Passwords
+            if password_user == pass_admin:
+                session.clear()
+                # can log in
+                session['admin_logged'] = True
+
+                flash('You are now logged in', 'success')
+                return redirect(url_for('d'))
+            else:
+                error = 'invalid password'
+                return render_template('login.html', error=error)
         else:
             error = 'No email found'
             return render_template('login.html', error=error)
-
+        cur.close()
     return render_template('login.html')
 
 
+#-----------------------------------------For employees only----------------------------------------
 def is_logged_in(f):
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -86,14 +124,24 @@ def dashboard():
     cur = mysql.connection.cursor()
 
     #Get employee by id
-    employee_data = cur.execute("SELECT * FROM employee WHERE id = %s", [session['id']])
+    employee_data = cur.execute("""SELECT e.*, s.name AS s_name, s.salary AS s_salary, s.day_off AS s_day_off 
+                                FROM employee e 
+                                JOIN status s 
+                                ON e.id_status = s.id
+                                WHERE e.id = %s""", [session['id']])
     employee = cur.fetchone()
-    status_data = cur.execute("SELECT * FROM status JOIN employee ON employee.id_status = status.id WHERE employee.id = %s", [session['id']])
-    status = cur.fetchone()
 
-    return render_template('dashboard.html', employee=employee, status=status)
+    day_off_data = cur.execute("SELECT d.* FROM day_off d JOIN employee e ON d.id_employee = e.id WHERE e.id = %s", [session['id']])
+    leaves = cur.fetchall()
+
+    t=0
+    for leave in leaves:
+        t += ((leave['end']-leave['start']).days)
+
+    return render_template('dashboard.html', employee=employee, leaves=leaves, n_leave=t)
     #close connection
     cur.close()
+
 
 @app.route('/calendar', methods=['GET'])
 @is_logged_in
@@ -101,12 +149,107 @@ def calendar():
     return render_template('calendar.html')
 
 
-@app.route('/logout', methods=['GET'])
+@app.route('/leave', methods=['GET', 'POST'])
 @is_logged_in
-def logout():
-    session.clear()
-    flash('You are now logged out', 'success')
-    return redirect(url_for('login'))
+def leave():
+    if request.method == 'POST':
+        #Current Month and year
+        # today = datetime.now()
+        # month = today.month
+        # year = today.year
+
+        #get form field
+        start = request.form['start']
+        end = request.form['end']
+        reason = request.form['reason']
+
+        if reason == "other":
+            reason = request.form['o_reason']
+            if reason == '':
+                error = "You need to fill the other reason field because you selected other as your reason"
+                return render_template('leave_form.html', error=error)
+
+        if end > start:
+            # Create cursor
+            cur = mysql.connection.cursor()
+
+            #get all the id_employee from day_off in a given month
+            id_employee = cur.execute(" SELECT id_employee FROM day_off WHERE start LIKE '2022-08-%' AND end LIKE '2022-08-%' ")
+
+            if id_employee < 6:
+                #Add everything in the table day_off
+                cur.execute("INSERT INTO day_off(start, end, reason, id_employee) VALUES(%s, %s, %s, %s)", (start, end, reason, session['id']))
+
+                # commit to db
+                mysql.connection.commit()
+
+                # close the connection
+                cur.close()
+                return redirect(url_for('accept'))
+            else:
+                return render_template('decline.html')
+        else:
+            error = "The start date can't be greater than the end date"
+            return render_template('leave_form.html', error=error)
+
+    return render_template('leave_form.html')
+
+
+@app.route('/accept', methods=['GET', 'POST'])
+@is_logged_in
+def accept():
+    return render_template('accept.html')
+
+
+#
+# class LinkForm(Form):
+#     website = StringField('Website', [validators.Length(min=5)])
+#     github = StringField('github', [validators.Length(min=5)])
+#     twitter = StringField('twitter', [validators.Length(min=5)])
+#     facebook = StringField('facebook', [validators.Length(min=5)])
+#
+#
+# @app.route('/edit_links', methods=['GET', 'POST'])
+# @is_logged_in
+# def edit_links():
+#     #Create cursor
+#     cur = mysql.connection.cursor()
+#
+#     #get employee by id
+#     result = cur.execute("SELECT * FROM links L JOIN employee E ON E.id_links = WHERE id = %s", [session['id']])
+#
+#     employee = cur.fetchone()
+#
+#     #get form
+#     form = LinkForm(request.form)
+#
+#     #populate employee from field
+#     form.website.data = employee['website']
+#     form.github.data = employee['github']
+#     form.twitter.data = employee['twitter']
+#     form.facebook.data = employee['facebook']
+#
+#     if request.method == 'POST' and form.validate():
+#         website = request.form['website']
+#         github = request.form['github']
+#         twitter = request.form['twitter']
+#         facebook = request.form['facebook']
+#
+#         #Create cursor
+#         cur = mysql.connection.cursor()
+#
+#         #execute
+#         cur.execute("UPDATE employee SET website=%s, github=%s, twitter=%s, facebook=%s WHERE id=%s", (website, github, twitter, facebook, session['id']))
+#
+#         #Commit to db
+#         mysql.connection.commit()
+#
+#         #close connection
+#         cur.close()
+#
+#         flash('Peronnal links edited', 'success')
+#         return redirect(url_for('dashboard'))
+#     return render_template('edit_links.html', form=form)
 
 
 class InfoForm(Form):
@@ -158,59 +301,107 @@ def edit_info():
     return render_template('edit_info.html', form=form)
 
 
-@app.route('/leave', methods=['GET', 'POST'])
+@app.route('/logout', methods=['GET'])
 @is_logged_in
-def leave():
-    return render_template('leave_form.html')
-
-class LinkForm(Form):
-    website = StringField('Website', [validators.Length(min=5)])
-    github = StringField('github', [validators.Length(min=5)])
-    twitter = StringField('twitter', [validators.Length(min=5)])
-    facebook = StringField('facebook', [validators.Length(min=5)])
+def logout():
+    session.clear()
+    flash('You are now logged out', 'success')
+    return redirect(url_for('login'))
 
 
-@app.route('/edit_links', methods=['GET', 'POST'])
-@is_logged_in
-def edit_links():
-    #Create cursor
+#-----------------------------------------For admin only----------------------------------------
+def is_admin(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'admin_logged' in session:
+            return f(*args, **kwargs)
+        else:
+            flash("Only the admin can access to the requested page, Please login", 'danger')
+            return redirect(url_for('login'))
+    return wrap
+
+
+@app.route('/admin/dashboard', methods=['GET'])
+@is_admin
+def d():
+    return render_template('admin/dashboard.html')
+
+
+@app.route('/admin/list_employee', methods=['GET'])
+@is_admin
+def get_list_employee():
+    # Create cursor
     cur = mysql.connection.cursor()
 
-    #get employee by id
-    result = cur.execute("SELECT * FROM employee WHERE id = %s", [session['id']])
+    # Get employee by id
+    cur.execute("SELECT e.*,s.name AS st_name  FROM employee e JOIN status s ON e.id_status=s.id ")
+    employees = cur.fetchall()
 
-    employee = cur.fetchone()
+    return render_template('admin/list_employee.html', employees=employees)
+    cur.close()
 
-    #get form
-    form = LinkForm(request.form)
 
-    #populate employee from field
-    form.website.data = employee['website']
-    form.github.data = employee['github']
-    form.twitter.data = employee['twitter']
-    form.facebook.data = employee['facebook']
+@app.route('/admin/detail_employee', methods=['GET', 'POST'])
+@is_admin
+def get_detail_employee():
+    if request.method == "POST":
+        #get hidden input id
+        id = request.form['id']
 
-    if request.method == 'POST' and form.validate():
-        website = request.form['website']
-        github = request.form['github']
-        twitter = request.form['twitter']
-        facebook = request.form['facebook']
-
-        #Create cursor
+        # Create cursor
         cur = mysql.connection.cursor()
 
-        #execute
-        cur.execute("UPDATE employee SET website=%s, github=%s, twitter=%s, facebook=%s WHERE id=%s", (website, github, twitter, facebook, session['id']))
+        # Get employee by id
+        employee_data = cur.execute("""SELECT e.*, s.name AS s_name, s.salary AS s_salary, s.day_off AS s_day_off 
+                                       FROM employee e 
+                                       JOIN status s 
+                                       ON e.id_status = s.id
+                                       WHERE e.id = %s""", [id])
+        employee = cur.fetchone()
 
-        #Commit to db
-        mysql.connection.commit()
+        day_off_data = cur.execute("SELECT d.* FROM day_off d JOIN employee e ON d.id_employee = e.id WHERE e.id = %s",[id])
+        leaves = cur.fetchall()
 
-        #close connection
+        t = 0
+        for leave in leaves:
+            t += ((leave['end'] - leave['start']).days)
+
+        return render_template('admin/detail_employee.html', employee=employee, leaves=leaves, n_leave=t)
+        # close connection
         cur.close()
 
-        flash('Peronnal links edited', 'success')
-        return redirect(url_for('dashboard'))
-    return render_template('edit_links.html', form=form)
+
+@app.route('/admin/list_leave', methods=['GET'])
+@is_admin
+def get_list_leave_appliances():
+    # Create cursor
+    cur = mysql.connection.cursor()
+
+    # Get employee by id
+    cur.execute("SELECT e.name AS name, d.* FROM employee e JOIN day_off d ON e.id = d.id_employee WHERE d.start LIKE '%-08-%' AND d.end LIKE '%-08-%' ")
+    employees = cur.fetchall()
+    return render_template('admin/list_leave_appliance.html', employees=employees)
+    cur.close()
+
+
+@app.route('/admin/calendar_admin', methods=['GET'])
+@is_admin
+def get_calendar():
+    return render_template('admin/calendar.html')
+
+
+@app.route('/admin/notifications', methods=['GET'])
+@is_admin
+def get_notifications():
+    # Create cursor
+    cur = mysql.connection.cursor()
+
+    # Get employee by id
+    cur.execute("SELECT * FROM notifications ")
+    notifications = cur.fetchall()
+
+    return render_template('admin/notif.html', notifications=notifications)
+    cur.close()
 
 
 class AddForm(Form):
@@ -225,8 +416,9 @@ class AddForm(Form):
     confirm = PasswordField('Confirm Password')
 
 
-@app.route('/add', methods=['GET', 'POST'])
-def add():
+@app.route('/admin/add_employee', methods=['GET', 'POST'])
+@is_admin
+def add_employee():
     form = AddForm(request.form)
     if request.method == 'POST' and form.validate():
         name = form.name.data
@@ -246,9 +438,17 @@ def add():
         #close the connection
         cur.close()
 
-        flash("An employee with status was added and can log in", 'success')
-        return redirect(url_for('add'))
-    return render_template('add.html', form=form)
+        flash("An employee was added and can log in", 'success')
+        return redirect(url_for('get_list_employee'))
+    return render_template('admin/add.html', form=form)
+
+
+@app.route('/admin/logout', methods=['GET'])
+@is_admin
+def logout_admin():
+    session.clear()
+    flash('You are now logged out', 'success')
+    return redirect(url_for('login'))
 
 
 app.secret_key = 'mionja123'

@@ -34,14 +34,14 @@
                                     <option value="casual" selected>Casual leave</option>
                                     <option value="sick">Sick leave</option>
                                     <option value="maternity">Maternity</option>
-                                    <option value="0">Other</option>
+                                    <option value="other">Other</option>
                              </select>
                         </div>
 
-                          <textarea class="form-control mt-5" placeholder="Other reason" name="o_reason"></textarea>
+                          <textarea class="form-control mt-5" placeholder="Other reason" name="o_reason">{{request.form.o_reason}}</textarea>
 
                         <div class="input-group mt-5">
-                            <input class="input--style-2" placeholder="Contact during leave" name="contact" required>
+                            <input class="input--style-2" placeholder="Contact during leave" name="contact" value="{{request.form.contact}}" required>
                         </div>
                         <button type="submit" class="btn btn--green btn--radius mt-5">Apply</button>
                     </form>

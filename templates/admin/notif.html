@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+
+{% block title%}Notification{% endblock %}
+
+{% block content%}
+<h1>Notifications from contact us of client</h1>
+<table class="table table-stripped table-hover border">
+    <thead class="bg-info">
+        <tr>
+            <td>Name</td>
+            <td>Email</td>
+            <td>Subject</td>
+            <td>Message</td>
+        </tr>
+    </thead>
+    <tbody>
+    {%for notif in notifications%}
+    <tr>
+        <td>{{notif.name}}</td>
+        <td>{{notif.email}}</td>
+        <td>{{notif.subject}}</td>
+        <td>{{notif.message}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

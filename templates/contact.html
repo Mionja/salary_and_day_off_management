@@ -11,7 +11,7 @@
     <div class="row">
 
         <div class="col-md-9 mb-md-0 mb-5">
-            <form id="contact-form" name="contact-form">
+            <form method="post" id="contact-form" name="contact-form">
 
                 <div class="row">
 
@@ -23,7 +23,7 @@
 
                     <div class="col-md-6">
                         <div class="md-form mb-0">
-                            <input type="text" id="email" name="email" class="form-control mb-4" placeholder="Your email">
+                            <input type="text" id="email" name="email" class="form-control mb-4" placeholder="Your email" required>
                         </div>
                     </div>
 
@@ -32,7 +32,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="md-form mb-0">
-                            <input type="text" id="subject" name="subject" class="form-control mb-4" placeholder="Subject">
+                            <input type="text" id="subject" name="subject" class="form-control mb-4" placeholder="Subject" required>
                         </div>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
                     <div class="col-md-12">
 
                         <div class="md-form">
-                            <textarea type="text" id="message" name="message" rows="2" class="form-control md-textarea" placeholder="Your message"></textarea>
+                            <textarea type="text" id="message" name="message" rows="2" class="form-control md-textarea" placeholder="Your message" required></textarea>
                         </div>
 
                     </div>
@@ -55,11 +55,11 @@
                 </div>
                 <div class="other-accounts text-center mt-4 ml-5">
                       <div class="footer-social-info ml-5">
-                          <a href="#"><img src="{{url_for('static', filename='img/email.png')}}" class="mr-3" aria-hidden="true"></a>
-                          <a href="#"><img src="{{url_for('static', filename='img/facebook.png')}}" class="mr-3" aria-hidden="true"></a>
-                          <a href="#"><img src="{{url_for('static', filename='img/twitter.png')}}" class="mr-3" aria-hidden="true"></a>
-                          <a href="#"><img src="{{url_for('static', filename='img/instagram.png')}}" class="mr-3" aria-hidden="true"></a>
-                          <a href="#"><img src="{{url_for('static', filename='img/snapchat.png')}}" class="mr-3" aria-hidden="true"></a>
+                          <a href="#"><img src="{{url_for('static', filename='img/email.png')}}" class="mr-3" width="40" aria-hidden="true"></a>
+                          <a href="#"><img src="{{url_for('static', filename='img/facebook.png')}}" class="mr-3" width="40" aria-hidden="true"></a>
+                          <a href="#"><img src="{{url_for('static', filename='img/twitter.png')}}" class="mr-3" width="40" aria-hidden="true"></a>
+                          <a href="#"><img src="{{url_for('static', filename='img/instagram.png')}}" class="mr-3" width="40" aria-hidden="true"></a>
+                          <a href="#"><img src="{{url_for('static', filename='img/snapchat.png')}}" class="mr-3" width="40" aria-hidden="true"></a>
                       </div>
                   </div>
             </form>
