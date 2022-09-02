@@ -138,7 +138,7 @@ def dashboard():
     for leave in leaves:
         t += ((leave['end']-leave['start']).days)
 
-    return render_template('dashboard.html', employee=employee, leaves=leaves, n_leave=t)
+    return render_template('employee/dashboard.html', employee=employee, leaves=leaves, n_leave=t)
     #close connection
     cur.close()
 
@@ -146,7 +146,7 @@ def dashboard():
 @app.route('/calendar', methods=['GET'])
 @is_logged_in
 def calendar():
-    return render_template('calendar.html')
+    return render_template('employee/calendar.html')
 
 
 @app.route('/leave', methods=['GET', 'POST'])
@@ -187,18 +187,18 @@ def leave():
                 cur.close()
                 return redirect(url_for('accept'))
             else:
-                return render_template('decline.html')
+                return render_template('employee/decline.html')
         else:
             error = "The start date can't be greater than the end date"
-            return render_template('leave_form.html', error=error)
+            return render_template('employee/leave_form.html', error=error)
 
-    return render_template('leave_form.html')
+    return render_template('employee/leave_form.html')
 
 
 @app.route('/accept', methods=['GET', 'POST'])
 @is_logged_in
 def accept():
-    return render_template('accept.html')
+    return render_template('employee/accept.html')
 
 
 #
@@ -298,7 +298,7 @@ def edit_info():
 
         flash('Peronnal information edited', 'success')
         return redirect(url_for('dashboard'))
-    return render_template('edit_info.html', form=form)
+    return render_template('employee/edit_info.html', form=form)
 
 
 @app.route('/logout', methods=['GET'])
