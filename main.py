@@ -172,44 +172,41 @@ def leave():
             reason = request.form['o_reason']
             if reason == '':
                 error = "You need to fill the other reason field because you selected other as your reason"
-                return render_template('leave_form.html', error=error)
-
-        if datetime.strptime(end, "%Y-%m-%d") == str(year)+'-'+str(month):
-            if end > start:
-                # Create cursor
-                cur = mysql.connection.cursor()
-
-                #get all from day_off in the current month
-                day_off = cur.execute(" SELECT * FROM day_off "
-                                      "WHERE MONTH(start) LIKE MONTH(NOW()) AND YEAR(start) LIKE YEAR(NOW()) "
-                                      "AND MONTH(end) LIKE MONTH(NOW()) AND YEAR(end) LIKE YEAR(NOW()) ")
-                #get status of the employee
-                status = cur.execute("SELECT s.name FROM status s "
-                                     "JOIN employee e "
-                                     "ON e.id_status=s.id "
-                                     "WHERE e.id=%", (session['id']))
-
-                if day_off['id_employee'] < 6:
-
-                    #Add everything in the table day_off
-                    cur.execute("INSERT INTO day_off(start, end, reason, id_employee) "
-                                "VALUES(%s, %s, %s, %s)", (start, end, reason, session['id']))
-
-                    # commit to db
-                    mysql.connection.commit()
-
-                    # close the connection
-                    cur.close()
-                    return redirect(url_for('accept'))
-                else:
-                    return render_template('employee/decline.html')
-            else:
-                error = "The start date can't be greater than the end date"
                 return render_template('employee/leave_form.html', error=error)
-        else:
-            error = "You can only choose a plan to leave for this month"
-            return render_template('employee/leave_form.html', error=error)
 
+        if end > start:
+            # Create cursor
+            cur = mysql.connection.cursor()
+
+            #get all from day_off in the current month
+            # day_off = cur.execute(" SELECT * FROM day_off "
+            #                       " WHERE MONTH(start) LIKE MONTH(NOW()) AND YEAR(start) LIKE YEAR(NOW()) "
+            #                       " AND MONTH(end) LIKE MONTH(NOW()) AND YEAR(end) LIKE YEAR(NOW()) ")
+            # #get status of the employee
+            # status = cur.execute("SELECT s.name FROM status s "
+            #                      "JOIN employee e "
+            #                      "ON e.id_status=s.id "
+            #                      "WHERE e.id=%", (session['id']))
+            id_employee = cur.execute("SELECT id_employee FROM day_off "
+                                      " WHERE MONTH(start) LIKE MONTH(NOW()) AND YEAR(start) LIKE YEAR(NOW()) "
+                                      " AND MONTH(end) LIKE MONTH(NOW()) AND YEAR(end) LIKE YEAR(NOW()) ")
+            if id_employee < 6:
+            #if day_off['id_employee'] < 6:
+                #Add everything in the table day_off
+                cur.execute("INSERT INTO day_off(start, end, reason, id_employee) "
+                            "VALUES(%s, %s, %s, %s)", (start, end, reason, session['id']))
+
+                # commit to db
+                mysql.connection.commit()
+
+                # close the connection
+                cur.close()
+                return redirect(url_for('accept'))
+            else:
+                return render_template('employee/decline.html')
+        else:
+            error = "The start date can't be greater than the end date"
+            return render_template('employee/leave_form.html', error=error)
     return render_template('employee/leave_form.html')
 
 

@@ -193,7 +193,12 @@
                                     {% if n_leave == 0 %}
                                     You haven't asked for a leave yet
                                     {% else %}
-                                    You asked for: {{n_leave}} days of leave in total
+                                    You asked for:
+                                    {% set t=0 %}
+                                    {% for leave in leaves %}
+                                        {%  t += ((leave['end']-leave['start']).days) %}
+                                    {% endfor %}
+                                    days of leave in total
                                     {% endif %}
                                 <hr>
                                     Note that if you take more than {{employee.s_day_off}} days off per month, it will be deduced on your salary
