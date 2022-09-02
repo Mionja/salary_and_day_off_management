@@ -3,7 +3,7 @@ from flask_mysqldb import MySQL
 from functools import wraps
 from wtforms import Form, StringField, PasswordField, validators
 from passlib.hash import sha256_crypt
-from datetime import datetime, date
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -15,6 +15,7 @@ app.config['MYSQL_DB'] = 'flaskapp'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 #init MYSQL
 mysql = MySQL(app)
+
 
 #-----------------------------------------For any user----------------------------------------
 @app.route('/', methods=['GET'])
@@ -38,7 +39,8 @@ def contact():
         #Create cursor
         cur = mysql.connection.cursor()
 
-        cur.execute("INSERT INTO notifications(name, email,subject, message) VALUES(%s, %s, %s,%s)", (name, email, subject, message))
+        cur.execute("INSERT INTO notifications(name, email,subject, message) "
+                    "VALUES(%s, %s, %s,%s)", (name, email, subject, message))
 
         #commit to db
         mysql.connection.commit()
@@ -131,7 +133,10 @@ def dashboard():
                                 WHERE e.id = %s""", [session['id']])
     employee = cur.fetchone()
 
-    day_off_data = cur.execute("SELECT d.* FROM day_off d JOIN employee e ON d.id_employee = e.id WHERE e.id = %s", [session['id']])
+    day_off_data = cur.execute("SELECT d.* "
+                               "FROM day_off d "
+                               "JOIN employee e "
+                               "ON d.id_employee = e.id WHERE e.id = %s", [session['id']])
     leaves = cur.fetchall()
 
     t=0
@@ -153,10 +158,10 @@ def calendar():
 @is_logged_in
 def leave():
     if request.method == 'POST':
-        #Current Month and year
-        # today = datetime.now()
-        # month = today.month
-        # year = today.year
+        #get curent time
+        today = datetime.now()
+        month = today.month
+        year = today.year
 
         #get form field
         start = request.form['start']
@@ -169,27 +174,40 @@ def leave():
                 error = "You need to fill the other reason field because you selected other as your reason"
                 return render_template('leave_form.html', error=error)
 
-        if end > start:
-            # Create cursor
-            cur = mysql.connection.cursor()
+        if datetime.strptime(end, "%Y-%m-%d") == str(year)+'-'+str(month):
+            if end > start:
+                # Create cursor
+                cur = mysql.connection.cursor()
 
-            #get all the id_employee from day_off in a given month
-            id_employee = cur.execute(" SELECT id_employee FROM day_off WHERE start LIKE '2022-08-%' AND end LIKE '2022-08-%' ")
+                #get all from day_off in the current month
+                day_off = cur.execute(" SELECT * FROM day_off "
+                                      "WHERE MONTH(start) LIKE MONTH(NOW()) AND YEAR(start) LIKE YEAR(NOW()) "
+                                      "AND MONTH(end) LIKE MONTH(NOW()) AND YEAR(end) LIKE YEAR(NOW()) ")
+                #get status of the employee
+                status = cur.execute("SELECT s.name FROM status s "
+                                     "JOIN employee e "
+                                     "ON e.id_status=s.id "
+                                     "WHERE e.id=%", (session['id']))
 
-            if id_employee < 6:
-                #Add everything in the table day_off
-                cur.execute("INSERT INTO day_off(start, end, reason, id_employee) VALUES(%s, %s, %s, %s)", (start, end, reason, session['id']))
+                if day_off['id_employee'] < 6:
 
-                # commit to db
-                mysql.connection.commit()
+                    #Add everything in the table day_off
+                    cur.execute("INSERT INTO day_off(start, end, reason, id_employee) "
+                                "VALUES(%s, %s, %s, %s)", (start, end, reason, session['id']))
 
-                # close the connection
-                cur.close()
-                return redirect(url_for('accept'))
+                    # commit to db
+                    mysql.connection.commit()
+
+                    # close the connection
+                    cur.close()
+                    return redirect(url_for('accept'))
+                else:
+                    return render_template('employee/decline.html')
             else:
-                return render_template('employee/decline.html')
+                error = "The start date can't be greater than the end date"
+                return render_template('employee/leave_form.html', error=error)
         else:
-            error = "The start date can't be greater than the end date"
+            error = "You can only choose a plan to leave for this month"
             return render_template('employee/leave_form.html', error=error)
 
     return render_template('employee/leave_form.html')
@@ -288,7 +306,9 @@ def edit_info():
         cur = mysql.connection.cursor()
 
         #execute
-        cur.execute("UPDATE employee SET name=%s, email=%s, address=%s, phone=%s WHERE id=%s", (name, email, address, phone, session['id']))
+        cur.execute("UPDATE employee "
+                    "SET name=%s, email=%s, address=%s, phone=%s "
+                    "WHERE id=%s", (name, email, address, phone, session['id']))
 
         #Commit to db
         mysql.connection.commit()
@@ -334,7 +354,8 @@ def get_list_employee():
     cur = mysql.connection.cursor()
 
     # Get employee by id
-    cur.execute("SELECT e.*,s.name AS st_name  FROM employee e JOIN status s ON e.id_status=s.id ")
+    cur.execute("SELECT e.*,s.name AS st_name  "
+                "FROM employee e JOIN status s ON e.id_status=s.id ")
     employees = cur.fetchall()
 
     return render_template('admin/list_employee.html', employees=employees)
@@ -359,7 +380,11 @@ def get_detail_employee():
                                        WHERE e.id = %s""", [id])
         employee = cur.fetchone()
 
-        day_off_data = cur.execute("SELECT d.* FROM day_off d JOIN employee e ON d.id_employee = e.id WHERE e.id = %s",[id])
+        day_off_data = cur.execute("SELECT d.* "
+                                   "FROM day_off d "
+                                   "JOIN employee e "
+                                   "ON d.id_employee = e.id "
+                                   "WHERE e.id = %s",[id])
         leaves = cur.fetchall()
 
         t = 0
@@ -378,7 +403,10 @@ def get_list_leave_appliances():
     cur = mysql.connection.cursor()
 
     # Get employee by id
-    cur.execute("SELECT e.name AS name, d.* FROM employee e JOIN day_off d ON e.id = d.id_employee WHERE d.start LIKE '%-08-%' AND d.end LIKE '%-08-%' ")
+    cur.execute("SELECT e.name AS name, d.* "
+                "FROM employee e JOIN day_off d ON e.id = d.id_employee "
+                "WHERE MONTH(d.start) LIKE MONTH(NOW()) AND YEAR(d.start) LIKE YEAR(NOW()) "
+                "AND MONTH(d.end) LIKE MONTH(NOW()) AND YEAR(d.end) LIKE YEAR(NOW()) ")
     employees = cur.fetchall()
     return render_template('admin/list_leave_appliance.html', employees=employees)
     cur.close()
@@ -430,7 +458,8 @@ def add_employee():
         #Create cursor
         cur = mysql.connection.cursor()
 
-        cur.execute("INSERT INTO employee(name, email,address, phone, password, id_status) VALUES(%s, %s, %s,%s,%s, 2)", (name, email, address, phone, password))
+        cur.execute("INSERT INTO employee(name, email,address, phone, password, id_status) "
+                    "VALUES(%s, %s, %s,%s,%s, 2)", (name, email, address, phone, password))
 
         #commit to db
         mysql.connection.commit()
