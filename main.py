@@ -125,7 +125,6 @@ def dashboard():
     # Create cursor
     cur = mysql.connection.cursor()
 
-    #Get employee by id
     employee_data = cur.execute("""SELECT e.*, s.name AS s_name, s.salary AS s_salary, s.day_off AS s_day_off 
                                 FROM employee e 
                                 JOIN status s 

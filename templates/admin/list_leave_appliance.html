@@ -3,30 +3,57 @@
 {% block title%}Leave{% endblock %}
 
 {% block content%}
-    <h1>List of leave appliances this month</h1>
-<table class="table table-stripped table-hover border">
-    <thead class="bg-info">
-        <tr>
-            <td>Name</td>
-            <td>Start date</td>
-            <td>End date</td>
-            <td>Reason</td>
-        </tr>
-    </thead>
-    <tbody>
-    {%for employee in employees%}
-    <tr>
-        <td>
-            <form action="{{url_for('get_detail_employee')}}" method="post">
-                <input type="hidden" name="id" value="{{employee.id}}">
-                <input type="submit" class="text-dark" style="border:none;" value="{{employee.name}}">
-            </form>
-        </td>
-        <td>{{employee.start}}</td>
-        <td>{{employee.end}}</td>
-        <td>{{employee.reason}}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="bg-white p-3 rounded">
+    <div class="row">
+        <div class="col-lg-4 mr-auto h3">Leave appliances</div>
+        <form method="post">
+            <div class="d-flex mr-3 mt-4">
+                <select name="select" class="selectpicker form-control">
+                  <option value="1">JANUARY</option>
+                  <option value="2">FEBRUARY</option>
+                  <option value="3">MARCH</option>
+                  <option value="4">APRIL</option>
+                  <option value="5">MAI</option>
+                  <option value="6">JUNE</option>
+                  <option value="7">JULY</option>
+                  <option value="8">AUGUST</option>
+                  <option value="9">SEPTEMBER</option>
+                  <option value="10">OCTOBER</option>
+                  <option value="11">NOVEMBER</option>
+                  <option value="12">DECEMBER</option>
+                </select>
+                <button class="btn btn-outline-primary">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+    <div class="bg-white p-3 rounded mt-2">
+        <table class="table table-stripped table-hover border">
+            <thead class="bg-secondary text-light">
+                <tr>
+                    <td>Name</td>
+                    <td>Start date</td>
+                    <td>End date</td>
+                    <td>Reason</td>
+                </tr>
+            </thead>
+            <tbody>
+            {%for employee in employees%}
+            <tr>
+                <td>
+                    <form action="{{url_for('get_detail_employee')}}" method="post">
+                        <input type="hidden" name="id" value="{{employee.id}}">
+                        <input type="submit" class="text-dark" style="border:none;" value="{{employee.name}}">
+                    </form>
+                </td>
+                <td>{{employee.start}}</td>
+                <td>{{employee.end}}</td>
+                <td>{{employee.reason}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+   </div>
+</div>
+
 {% endblock %}

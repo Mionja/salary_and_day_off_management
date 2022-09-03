@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 
-{% block title%}Employee{% endblock %}
+{% block title%}Dashboard{% endblock %}
 {% block head%}<link rel="stylesheet" href="{{url_for('static', filename='css/app.css')}}">{% endblock %}
 
 {% block content%}
@@ -124,7 +124,7 @@
 
                     <div class="row">
                         <div class="col-sm-3">
-                        <h6 class="mb-0">Monthly salary</h6>
+                        <h6 class="mb-0">Monthly salary (BASIC)</h6>
                         </div>
                         <div class="col-sm-9 text-secondary">
                             {{employee.s_salary}}$
@@ -134,13 +134,13 @@
 
                     <div class="row">
                         <div class="col-sm-3">
-                        <h6 class="mb-0">Annual salary</h6>
+                        <h6 class="mb-0">Annual salary  (BASIC)</h6>
                         </div>
                         <div class="col-sm-9 text-secondary">
                             {{employee.s_salary * 12}}$
                         </div>
                     </div>
-                    <hr>
+
                     </div>
                   </div>
 
@@ -153,4 +153,32 @@
             </div>
         </div>
 
+<table class="table table-light table-stripped" id="salary">
+    <thead>
+        <th>Basic salary</th>
+        <th>IRSA(3.5%)</th>
+        <th>Cnaps(1.5%)</th>
+        <th>Ostie(1.5%)</th>
+        <th>Leave without sold</th>
+        <th>H_sup</th>
+        <th>Final(net)</th>
+    </thead>
+    <tbody>
+    <tr>
+        <td>{{employee.s_salary}}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>
+            {% if (employee.s_day_off - n_leave)< 0%}
+                {{ (n_leave - employee.s_day_off)*(employee.s_salary/30) }}
+            {% else %}
+                0
+            {% endif %}
+        </td>
+        <td></td>
+        <td> {{ employee.s_salary - ( (n_leave - employee.s_day_off)*(employee.s_salary/30) + 0 ) }}$ </td>
+    </tr>
+    </tbody>
+</table>
 {% endblock %}

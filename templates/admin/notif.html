@@ -3,25 +3,38 @@
 {% block title%}Notification{% endblock %}
 
 {% block content%}
-<h1>Notifications from contact us of client</h1>
-<table class="table table-stripped table-hover border">
-    <thead class="bg-info">
-        <tr>
-            <td>Name</td>
-            <td>Email</td>
-            <td>Subject</td>
-            <td>Message</td>
-        </tr>
-    </thead>
-    <tbody>
-    {%for notif in notifications%}
-    <tr>
-        <td>{{notif.name}}</td>
-        <td>{{notif.email}}</td>
-        <td>{{notif.subject}}</td>
-        <td>{{notif.message}}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+
+   <div class="bg-white p-3 rounded">
+            <div class="row">
+                <div class="col-lg-4 mr-auto h3">Notifications</div>
+
+                <div class="d-flex mr-3">
+                    <input class="form-control mx-2" type="search" placeholder="Search" aria-label="Search">
+                    <button class="btn btn-outline-primary">Search</button>
+                </div>
+            </div>
+        <div class="bg-white p-3 rounded mt-2">
+            <div class="row d-flex justify-content-center">
+
+                <a href="#" class="btn btn-sm btn-secondary w-75 mb-5">Mark all as read</a>
+
+            </div>
+            {% if notifications %}
+            {%for notif in notifications%}
+            <div class="row">
+                <div class="col-sm-2">{{notif.name}}</div>
+                <div class="col-sm-4"><a href= "mailto:{{notif.email}}" target="_blank"  class="text-dark"> {{notif.email}} </a></div>
+                <div class="col-sm-2">{{notif.subject}}</div>
+                <div class="col-sm-4">{{ notif.message }}</div>
+            </div>
+            <hr>
+            {% endfor %}
+            {% else %}
+
+                <div class="text-center">
+                    <div class="h1 font-weight-light">Vous n'avez aucune notification.</div>
+                </div>
+            {% endif %}
+        </div>
+   </div>
 {% endblock %}
