@@ -7,17 +7,17 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-#Config MySQL
+# Config MySQL
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'flaskapp'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-#init MYSQL
+# init MYSQL
 mysql = MySQL(app)
 
 
-#-----------------------------------------For any user----------------------------------------
+# -----------------------------------------For any user----------------------------------------
 @app.route('/', methods=['GET'])
 def home():
     return render_template('home.html')
@@ -36,16 +36,16 @@ def contact():
         subject = request.form['subject']
         message = request.form['message']
 
-        #Create cursor
+        # Create cursor
         cur = mysql.connection.cursor()
 
         cur.execute("INSERT INTO notifications(name, email,subject, message) "
                     "VALUES(%s, %s, %s,%s)", (name, email, subject, message))
 
-        #commit to db
+        # commit to db
         mysql.connection.commit()
 
-        #close the connection
+        # close the connection
         cur.close()
 
         flash("Thank you for contacting us, your message has been received", 'success')
@@ -56,14 +56,14 @@ def contact():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        #Get FORM fields
+        # Get FORM fields
         login = request.form['login']
         password_user = request.form['pswd']
 
-        #Create cursor
+        # Create cursor
         cur = mysql.connection.cursor()
 
-        #Get user by EMAIL(login)
+        # Get user by EMAIL(login)
         result = cur.execute("SELECT * FROM employee WHERE email=%s", [login])
 
         # Data admin
@@ -71,14 +71,14 @@ def login():
         pass_admin = '123'
 
         if result > 0:
-            #get stored hash
+            # get stored hash
             data = cur.fetchone()
             password = data['password']
 
-            #compare Passwords
+            # compare Passwords
             if sha256_crypt.verify(password_user, password):
                 session.clear()
-                #can log in
+                # can log in
                 session['logged_in'] = True
                 session['id'] = data['id']
 
@@ -107,7 +107,7 @@ def login():
     return render_template('login.html')
 
 
-#-----------------------------------------For employees only----------------------------------------
+# -----------------------------------------For employees only----------------------------------------
 def is_logged_in(f):
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -116,6 +116,7 @@ def is_logged_in(f):
         else:
             flash("Unauthorized, Please login", 'danger')
             return redirect(url_for('login'))
+
     return wrap
 
 
@@ -125,12 +126,13 @@ def dashboard():
     # Create cursor
     cur = mysql.connection.cursor()
 
-    #Get employee by id
-    employee_data = cur.execute("""SELECT e.*, s.name AS s_name, s.salary AS s_salary, s.day_off AS s_day_off 
-                                FROM employee e 
-                                JOIN status s 
-                                ON e.id_status = s.id
-                                WHERE e.id = %s""", [session['id']])
+    # Get employee by id
+    employee_data = cur.execute("""SELECT e.*, s.name AS s_name, s.salary AS s_salary, s.day_off AS s_day_off, s.cnaps,
+                                    s.osti, s.irsa
+                                    FROM employee e 
+                                    JOIN status s 
+                                    ON e.id_status = s.id
+                                    WHERE e.id = %s""", [session['id']])
     employee = cur.fetchone()
 
     day_off_data = cur.execute("SELECT d.* "
@@ -139,12 +141,12 @@ def dashboard():
                                "ON d.id_employee = e.id WHERE e.id = %s", [session['id']])
     leaves = cur.fetchall()
 
-    t=0
+    t = 0
     for leave in leaves:
-        t += ((leave['end']-leave['start']).days)
+        t += ((leave['end'] - leave['start']).days)
 
     return render_template('employee/dashboard.html', employee=employee, leaves=leaves, n_leave=t)
-    #close connection
+    # close connection
     cur.close()
 
 
@@ -158,12 +160,12 @@ def calendar():
 @is_logged_in
 def leave():
     if request.method == 'POST':
-        #get curent time
+        # get curent time
         today = datetime.now()
         month = today.month
         year = today.year
 
-        #get form field
+        # get form field
         start = request.form['start']
         end = request.form['end']
         reason = request.form['reason']
@@ -174,16 +176,16 @@ def leave():
                 error = "You need to fill the other reason field because you selected other as your reason"
                 return render_template('leave_form.html', error=error)
 
-        if datetime.strptime(end, "%Y-%m-%d") == str(year)+'-'+str(month):
+        if datetime.strptime(end, "%Y-%m-%d") == str(year) + '-' + str(month):
             if end > start:
                 # Create cursor
                 cur = mysql.connection.cursor()
 
-                #get all from day_off in the current month
+                # get all from day_off in the current month
                 day_off = cur.execute(" SELECT * FROM day_off "
                                       "WHERE MONTH(start) LIKE MONTH(NOW()) AND YEAR(start) LIKE YEAR(NOW()) "
                                       "AND MONTH(end) LIKE MONTH(NOW()) AND YEAR(end) LIKE YEAR(NOW()) ")
-                #get status of the employee
+                # get status of the employee
                 status = cur.execute("SELECT s.name FROM status s "
                                      "JOIN employee e "
                                      "ON e.id_status=s.id "
@@ -191,7 +193,7 @@ def leave():
 
                 if day_off['id_employee'] < 6:
 
-                    #Add everything in the table day_off
+                    # Add everything in the table day_off
                     cur.execute("INSERT INTO day_off(start, end, reason, id_employee) "
                                 "VALUES(%s, %s, %s, %s)", (start, end, reason, session['id']))
 
@@ -211,6 +213,23 @@ def leave():
             return render_template('employee/leave_form.html', error=error)
 
     return render_template('employee/leave_form.html')
+
+
+@app.route('/advance', methods=['GET', 'POST'])
+@is_logged_in
+def advance():
+    cur = mysql.connection.cursor()
+    cur.execute("""SELECT e.*, s.* FROM employee e JOIN status s
+                    ON e.id_status = s.id_status WHERE id = %s""", [session['id']])
+    data = cur.fetchone
+
+    if request.method == 'POST':
+        advance = request.form['advance'] + data.advance
+        cur.execute("""INSERT INTO advance FROM employee where 
+                        ON e.id_status = s.id_status WHERE id = %s""", [session['id']])
+        cur.commit()
+        flash('Alright, the amount will be shared to your account')
+    return render_template('employee/advance.html')
 
 
 @app.route('/accept', methods=['GET', 'POST'])
@@ -280,18 +299,18 @@ class InfoForm(Form):
 @app.route('/edit_info', methods=['GET', 'POST'])
 @is_logged_in
 def edit_info():
-    #Create cursor
+    # Create cursor
     cur = mysql.connection.cursor()
 
-    #get employee by id
+    # get employee by id
     result = cur.execute("SELECT * FROM employee WHERE id = %s", [session['id']])
 
     employee = cur.fetchone()
 
-    #get form
+    # get form
     form = InfoForm(request.form)
 
-    #populate employee from field
+    # populate employee from field
     form.name.data = employee['name']
     form.email.data = employee['email']
     form.address.data = employee['address']
@@ -302,18 +321,18 @@ def edit_info():
         email = request.form['email']
         address = request.form['address']
         phone = request.form['phone']
-        #Create cursor
+        # Create cursor
         cur = mysql.connection.cursor()
 
-        #execute
+        # execute
         cur.execute("UPDATE employee "
                     "SET name=%s, email=%s, address=%s, phone=%s "
                     "WHERE id=%s", (name, email, address, phone, session['id']))
 
-        #Commit to db
+        # Commit to db
         mysql.connection.commit()
 
-        #close connection
+        # close connection
         cur.close()
 
         flash('Peronnal information edited', 'success')
@@ -329,7 +348,7 @@ def logout():
     return redirect(url_for('login'))
 
 
-#-----------------------------------------For admin only----------------------------------------
+# -----------------------------------------For admin only----------------------------------------
 def is_admin(f):
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -338,6 +357,7 @@ def is_admin(f):
         else:
             flash("Only the admin can access to the requested page, Please login", 'danger')
             return redirect(url_for('login'))
+
     return wrap
 
 
@@ -366,7 +386,7 @@ def get_list_employee():
 @is_admin
 def get_detail_employee():
     if request.method == "POST":
-        #get hidden input id
+        # get hidden input id
         id = request.form['id']
 
         # Create cursor
@@ -384,7 +404,7 @@ def get_detail_employee():
                                    "FROM day_off d "
                                    "JOIN employee e "
                                    "ON d.id_employee = e.id "
-                                   "WHERE e.id = %s",[id])
+                                   "WHERE e.id = %s", [id])
         leaves = cur.fetchall()
 
         t = 0
@@ -453,18 +473,19 @@ def add_employee():
         email = form.email.data
         address = form.address.data
         phone = form.phone.data
+        status = form.status.data
         password = sha256_crypt.encrypt(str(form.password.data))
 
-        #Create cursor
+        # Create cursor
         cur = mysql.connection.cursor()
 
         cur.execute("INSERT INTO employee(name, email,address, phone, password, id_status) "
                     "VALUES(%s, %s, %s,%s,%s, 2)", (name, email, address, phone, password))
 
-        #commit to db
+        # commit to db
         mysql.connection.commit()
 
-        #close the connection
+        # close the connection
         cur.close()
 
         flash("An employee was added and can log in", 'success')
