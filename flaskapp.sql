@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : sam. 03 sep. 2022 à 05:57
+-- Généré le : sam. 03 sep. 2022 à 08:27
 -- Version du serveur : 10.4.24-MariaDB
 -- Version de PHP : 8.1.6
 
@@ -54,6 +54,7 @@ CREATE TABLE `employee` (
   `email` varchar(100) NOT NULL,
   `address` varchar(150) NOT NULL,
   `phone` varchar(30) NOT NULL,
+  `photo` varchar(50) NOT NULL DEFAULT 'default.jpg',
   `hiring_day` timestamp NOT NULL DEFAULT current_timestamp(),
   `password` varchar(200) NOT NULL,
   `h_sup` int(11) NOT NULL,
@@ -66,10 +67,11 @@ CREATE TABLE `employee` (
 -- Déchargement des données de la table `employee`
 --
 
-INSERT INTO `employee` (`id`, `name`, `email`, `address`, `phone`, `hiring_day`, `password`, `h_sup`, `leave_without_sold`, `advance`, `id_status`) VALUES
-(1, 'Mionja', 'mionjaranaivoarison@gmail.com', 'My address', '+261 34 07 373 40', '2022-09-02 03:59:38', '$5$rounds=535000$KlEMoGcgQDs3tGEL$wCUfou4fg8AXbOILa.0y1ux9/JgPlnFfhBAJ2BGwHq6', 0, 0, 0, 1),
-(2, 'Mpiasa', 'employe@gmail.com', 'Address of employee ', '123456789089', '2022-09-02 04:08:11', '$5$rounds=535000$8aQqfBj8ur0guxif$CLqus7jSx7FYYoEYYoGjUfs/uLEURtZtuXbeO3XuAl0', 0, 0, 0, 2),
-(3, 'Mario', 'lovamanitramario@gmail.com', 'Lot IVH 132a Ambohimanandray', '0340731748', '2022-09-02 15:14:18', '$5$rounds=535000$ijl.il1rACneJY9i$6Er6nMKYIX1ZmjQ3QxhANTDrvvRcVBpwEWj/bf9AdC1', 0, 0, 0, 2);
+INSERT INTO `employee` (`id`, `name`, `email`, `address`, `phone`, `photo`, `hiring_day`, `password`, `h_sup`, `leave_without_sold`, `advance`, `id_status`) VALUES
+(1, 'Mionja', 'mionjaranaivoarison@gmail.com', 'My address', '+261 34 07 373 40', 'default.jpg', '2022-09-02 03:59:38', '$5$rounds=535000$KlEMoGcgQDs3tGEL$wCUfou4fg8AXbOILa.0y1ux9/JgPlnFfhBAJ2BGwHq6', 0, 0, 15, 1),
+(2, 'Mpiasa', 'employe@gmail.com', 'Address of employee ', '123456789089', 'default.jpg', '2022-09-02 04:08:11', '$5$rounds=535000$8aQqfBj8ur0guxif$CLqus7jSx7FYYoEYYoGjUfs/uLEURtZtuXbeO3XuAl0', 0, 0, 50, 2),
+(3, 'Mario', 'lovamanitramario@gmail.com', 'Lot IVH 132a Ambohimanandray', '0340731748', 'Mario.jpg', '2022-09-02 15:14:18', '$5$rounds=535000$ijl.il1rACneJY9i$6Er6nMKYIX1ZmjQ3QxhANTDrvvRcVBpwEWj/bf9AdC1', 0, 0, 100, 2),
+(4, 'Test', 'lovamanitramario@gmail.com', 'Lot IVH 132a Ambohimanandray', '0340731748', 'default.jpg', '2022-09-03 06:14:06', '$5$rounds=535000$vp9Khf4u02ij5SKF$FtE/elORmnTJVHW2u4yiYWYg7aApuJLlyik2/fhHvp9', 0, 0, 0, 2);
 
 -- --------------------------------------------------------
 
@@ -165,7 +167,7 @@ ALTER TABLE `day_off`
 -- AUTO_INCREMENT pour la table `employee`
 --
 ALTER TABLE `employee`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT pour la table `notifications`
