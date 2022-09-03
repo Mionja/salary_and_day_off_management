@@ -4,9 +4,9 @@
 
 {% block content%}
 
-<h1>Take an advance</h1>
-{% from "includes/_formhelpers.html" import render_field %}
-<form method="post" >
+ <h1 class="col-lg-6 pl-0 mb-4">Take an advance</h1>
+ <h4>Your actual sold : {{ employee.salary - employee.advance}}$</h4>
+ <form method="post" >
  <div class="form-group">
   <label for="advance">Amount to take :</label>
   <input type="number" name="advance" class="form-control">

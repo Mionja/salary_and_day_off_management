@@ -6,7 +6,7 @@
 
 <h1>Edit personal information</h1>
 {% from "includes/_formhelpers.html" import render_field %}
-<form method="post" >
+<form method="post" enctype="multipart/form-data">
  <div class="form-group">
   {{ render_field(form.name, class_="form-control") }}
  </div>
@@ -22,6 +22,9 @@
   {{ render_field(form.phone, class_="form-control") }}
  </div>
 
+ <div class="form-group">
+  <input type="file" name="photo" class="form-control" capture="user" accept=".jpg, .png, .gif" >
+ </div>
  <p><input type="submit" class="btn btn-primary" value="Submit"></p>
 </form>
 

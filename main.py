@@ -1,6 +1,10 @@
+import os
+
 from flask import Flask, render_template, flash, redirect, url_for, session, logging, request
 from flask_mysqldb import MySQL
 from functools import wraps
+
+from werkzeug.utils import secure_filename
 from wtforms import Form, StringField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from datetime import datetime
@@ -219,17 +223,26 @@ def leave():
 @is_logged_in
 def advance():
     cur = mysql.connection.cursor()
-    cur.execute("""SELECT e.*, s.* FROM employee e JOIN status s
-                    ON e.id_status = s.id_status WHERE id = %s""", [session['id']])
-    data = cur.fetchone
-
+    cur.execute("""SELECT e.*, s.* FROM employee e JOIN status s ON e.id_status = s.id WHERE e.id = %s;""",
+                [session['id']])
+    employee = cur.fetchone()
     if request.method == 'POST':
-        advance = request.form['advance'] + data.advance
-        cur.execute("""INSERT INTO advance FROM employee where 
-                        ON e.id_status = s.id_status WHERE id = %s""", [session['id']])
-        cur.commit()
-        flash('Alright, the amount will be shared to your account')
-    return render_template('employee/advance.html')
+        advance = request.form['advance']
+        if int(advance) <= employee['salary'] - employee['advance']:
+            cur.execute("""UPDATE employee SET advance =advance + %s WHERE id = %s""", (advance, [session['id']]))
+            # Commit to db
+            mysql.connection.commit()
+
+            # close connection
+            cur.close()
+            flash('Alright, {}$ will be shared to your account, remanant amount : {}$'.format(advance,
+                                                                                              employee['salary'] -
+                                                                                              employee['advance'] - int(
+                                                                                                  advance)), 'success')
+        else:
+            flash('You cannot take an amount above your sold', 'danger')
+
+    return render_template('employee/advance.html', employee=employee)
 
 
 @app.route('/accept', methods=['GET', 'POST'])
@@ -324,11 +337,23 @@ def edit_info():
         # Create cursor
         cur = mysql.connection.cursor()
 
-        # execute
-        cur.execute("UPDATE employee "
-                    "SET name=%s, email=%s, address=%s, phone=%s "
-                    "WHERE id=%s", (name, email, address, phone, session['id']))
-
+        if "photo" in request.files:
+            file = request.files["photo"]
+            if file:
+                file_name = secure_filename(file.filename)
+                file.save('static/uploads/' + file_name)
+                # execute
+                try:
+                    os.remove('static/uploads/{}'.format(employee['photo']))
+                except:
+                    pass
+                cur.execute("UPDATE employee "
+                            "SET name=%s, email=%s, address=%s, phone=%s, photo=%s "
+                            "WHERE id=%s", (name, email, address, phone, file_name, session['id']))
+        else:
+            cur.execute("UPDATE employee "
+                        "SET name=%s, email=%s, address=%s, phone=%s "
+                        "WHERE id=%s", (name, email, address, phone, session['id']))
         # Commit to db
         mysql.connection.commit()
 
@@ -473,7 +498,6 @@ def add_employee():
         email = form.email.data
         address = form.address.data
         phone = form.phone.data
-        status = form.status.data
         password = sha256_crypt.encrypt(str(form.password.data))
 
         # Create cursor

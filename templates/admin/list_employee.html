@@ -8,7 +8,7 @@
 <table class="mt-5 table">
     {%for employee in employees%}
     <tr>
-        <td><img src="" alt="photo" width="30"></td>
+        <td><img src="/static/uploads/{{employee.photo}}" alt="photo" width="35" height="38" class="rounded-circle"></td>
         <td>
             <form action="{{url_for('get_detail_employee')}}" method="post">
                 <input type="hidden" name="id" value="{{employee.id}}">
