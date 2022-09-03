@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+
+{% block title%}Dashboard{% endblock %}
+{% block head%}<link rel="stylesheet" href="{{url_for('static', filename='css/app.css')}}">{% endblock %}
+
+{% block content%}
+
+<img src="{{url_for('static', filename='uploads/'+employee.photo)}}" alt="Admin" onclick="requestFullscreen(this)" width="250">
+
+<form method="post" enctype="multipart/form-data" class="mt-4">
+    <label for="photo">Insert your new photo here: </label>
+    <input type="file" name="photo" id="photo">
+    <button type="submit" class="btn btn-info">Change</button>
+</form>
+
+{% endblock %}

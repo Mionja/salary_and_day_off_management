@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1:3306
--- Généré le : ven. 02 sep. 2022 à 16:31
+-- Généré le : sam. 03 sep. 2022 à 20:49
 -- Version du serveur : 5.7.36
 -- Version de PHP : 7.4.26
 
@@ -36,14 +36,15 @@ CREATE TABLE IF NOT EXISTS `day_off` (
   `id_employee` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_day_off_id_employee` (`id_employee`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
 --
 -- Déchargement des données de la table `day_off`
 --
 
 INSERT INTO `day_off` (`id`, `start`, `end`, `reason`, `id_employee`) VALUES
-(1, '2022-09-04', '2022-09-06', 'casual', 1);
+(1, '2022-09-01', '2022-09-10', 'Mandende', 1),
+(2, '2022-09-11', '2022-09-13', 'Mcaca any anaty ala', 2);
 
 -- --------------------------------------------------------
 
@@ -70,7 +71,7 @@ CREATE TABLE IF NOT EXISTS `employee` (
 --
 
 INSERT INTO `employee` (`id`, `name`, `email`, `address`, `phone`, `hiring_day`, `password`, `id_status`) VALUES
-(1, 'Mionja', 'mionjaranaivoarison@gmail.com', 'My address', '+261 34 07 373 40', '2022-09-02 03:59:38', '$5$rounds=535000$KlEMoGcgQDs3tGEL$wCUfou4fg8AXbOILa.0y1ux9/JgPlnFfhBAJ2BGwHq6', 1),
+(1, 'Mionja', 'mionjaranaivoarison@gmail.com', 'Earth of the solar system', '+261 34 07 373 40', '2022-09-02 03:59:38', '$5$rounds=535000$KlEMoGcgQDs3tGEL$wCUfou4fg8AXbOILa.0y1ux9/JgPlnFfhBAJ2BGwHq6', 1),
 (2, 'Mpiasa', 'employe@gmail.com', 'Address of employee ', '123456789089', '2022-09-02 04:08:11', '$5$rounds=535000$8aQqfBj8ur0guxif$CLqus7jSx7FYYoEYYoGjUfs/uLEURtZtuXbeO3XuAl0', 2);
 
 -- --------------------------------------------------------
@@ -87,7 +88,7 @@ CREATE TABLE IF NOT EXISTS `notifications` (
   `subject` varchar(200) NOT NULL,
   `message` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 
 --
 -- Déchargement des données de la table `notifications`
@@ -95,7 +96,8 @@ CREATE TABLE IF NOT EXISTS `notifications` (
 
 INSERT INTO `notifications` (`id`, `name`, `email`, `subject`, `message`) VALUES
 (1, 'Mionja', 'mionjaranaivoarison@gmail.com', 'Noana ', 'NOANA LOATRA AHO E'),
-(2, 'test', 'test@gmail.com', 'test', 'This is a teeeest');
+(2, 'test', 'test@gmail.com', 'test', 'This is a teeeest'),
+(3, 'Python', 'python@gmail.com', 'Start', 'print(\"hello world\")');
 
 -- --------------------------------------------------------
 

@@ -17,9 +17,10 @@
 
   <div class="form-group">
    <label class="input-group-addon">Please select the status</label>
-            <select name="select" class="selectpicker form-control">
-              <option value="1">CEO</option>
-              <option value="2">test</option>
+            <select name="id_status" class="selectpicker form-control">
+             {% for st in status %}
+              <option value={{st.id}}>{{st.name}}</option>
+             {%endfor%}
             </select>
  </div>
 

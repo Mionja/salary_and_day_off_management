@@ -1,6 +1,10 @@
+import os
+
 from flask import Flask, render_template, flash, redirect, url_for, session, logging, request
 from flask_mysqldb import MySQL
 from functools import wraps
+
+from werkzeug.utils import secure_filename
 from wtforms import Form, StringField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from datetime import datetime
@@ -125,11 +129,13 @@ def dashboard():
     # Create cursor
     cur = mysql.connection.cursor()
 
-    employee_data = cur.execute("""SELECT e.*, s.name AS s_name, s.salary AS s_salary, s.day_off AS s_day_off 
-                                FROM employee e 
-                                JOIN status s 
-                                ON e.id_status = s.id
-                                WHERE e.id = %s""", [session['id']])
+    # Get employee by id
+    employee_data = cur.execute("""SELECT e.*, s.name AS s_name, s.salary AS s_salary, s.day_off AS s_day_off, s.cnaps,
+                                      s.osti, s.irsa
+                                      FROM employee e 
+                                      JOIN status s 
+                                      ON e.id_status = s.id
+                                      WHERE e.id = %s""", [session['id']])
     employee = cur.fetchone()
 
     day_off_data = cur.execute("SELECT d.* "
@@ -151,6 +157,39 @@ def dashboard():
 @is_logged_in
 def calendar():
     return render_template('employee/calendar.html')
+
+
+@app.route('/advance', methods=['GET', 'POST'])
+@is_logged_in
+def advance():
+    cur = mysql.connection.cursor()
+    cur.execute("""SELECT e.*, s.* 
+                FROM employee e JOIN status s 
+                ON e.id_status = s.id 
+                WHERE e.id = %s;""",
+                [session['id']])
+    employee = cur.fetchone()
+    if request.method == 'POST':
+        advance = request.form['advance']
+        if employee['advance']:
+            _advance = employee['advance']
+        else:
+            _advance = 0
+        if int(advance) <= employee['salary'] - _advance:
+            cur.execute("""UPDATE employee SET advance =advance + %s WHERE id = %s""", (int(advance), [session['id']]))
+            # Commit to db
+            mysql.connection.commit()
+
+            # close connection
+            cur.close()
+            flash('Alright, {}$ will be shared to your account, remanant amount : {}$'.format(advance,
+                                                                                              employee['salary'] -
+                                                                                              _advance - int(
+                                                                                                  advance)), 'success')
+        else:
+            flash('You cannot take an amount above your sold', 'danger')
+
+    return render_template('employee/advance.html', employee=employee)
 
 
 @app.route('/leave', methods=['GET', 'POST'])
@@ -264,6 +303,38 @@ def accept():
 #         flash('Peronnal links edited', 'success')
 #         return redirect(url_for('dashboard'))
 #     return render_template('edit_links.html', form=form)
+@app.route('/edit_photo', methods=['GET', 'POST'])
+@is_logged_in
+def edit_photo():
+    #Create cursor
+    cur = mysql.connection.cursor()
+    # get employee by id
+    result = cur.execute("SELECT * FROM employee WHERE id = %s", [session['id']])
+
+    employee = cur.fetchone()
+
+    if request.method == 'POST':
+        file = request.files["photo"]
+        if file:
+            photo = secure_filename(file.filename)
+            file.save('static/uploads/' + photo)
+            # execute
+            try:
+                os.remove('static/uploads/{}'.format(employee['photo']))
+            except:
+                pass
+            cur.execute("UPDATE employee "
+                        "SET photo=%s "
+                        "WHERE id=%s", (photo, session['id']))
+        #Commit to db
+        mysql.connection.commit()
+
+        #close connection
+        cur.close()
+
+        flash('Photo edited', 'success')
+        return redirect(url_for('dashboard'))
+    return render_template('employee/edit_photo.html', employee=employee)
 
 
 class InfoForm(Form):
@@ -358,53 +429,78 @@ def get_list_employee():
     cur.close()
 
 
-@app.route('/admin/detail_employee', methods=['GET', 'POST'])
+@app.route('/admin/detail_employee', methods= ['POST'])
 @is_admin
 def get_detail_employee():
-    if request.method == "POST":
-        #get hidden input id
-        id = request.form['id']
+    #get hidden input id
+    id = request.form['id']
 
-        # Create cursor
-        cur = mysql.connection.cursor()
+    # Create cursor
+    cur = mysql.connection.cursor()
 
-        # Get employee by id
-        employee_data = cur.execute("""SELECT e.*, s.name AS s_name, s.salary AS s_salary, s.day_off AS s_day_off 
-                                       FROM employee e 
-                                       JOIN status s 
-                                       ON e.id_status = s.id
-                                       WHERE e.id = %s""", [id])
-        employee = cur.fetchone()
+    # Get employee by id
+    employee_data = cur.execute("""SELECT e.*, s.name AS s_name, s.salary AS s_salary, s.day_off AS s_day_off 
+                                   FROM employee e 
+                                   JOIN status s 
+                                   ON e.id_status = s.id
+                                   WHERE e.id = %s""", [id])
+    employee = cur.fetchone()
 
-        day_off_data = cur.execute("SELECT d.* "
-                                   "FROM day_off d "
-                                   "JOIN employee e "
-                                   "ON d.id_employee = e.id "
-                                   "WHERE e.id = %s",[id])
-        leaves = cur.fetchall()
+    day_off_data = cur.execute("SELECT d.* "
+                               "FROM day_off d "
+                               "JOIN employee e "
+                               "ON d.id_employee = e.id "
+                               "WHERE e.id = %s", [id])
+    leaves = cur.fetchall()
 
-        t = 0
-        for leave in leaves:
-            t += ((leave['end'] - leave['start']).days)
+    t = 0
+    for leave in leaves:
+        t += ((leave['end'] - leave['start']).days)
 
-        return render_template('admin/detail_employee.html', employee=employee, leaves=leaves, n_leave=t)
-        # close connection
-        cur.close()
+    return render_template('admin/detail_employee.html', employee=employee, leaves=leaves, n_leave=t)
+    # close connection
+    cur.close()
 
 
-@app.route('/admin/list_leave', methods=['GET'])
+@app.route('/admin/list_leave', methods=['GET', 'POST'])
 @is_admin
 def get_list_leave_appliances():
     # Create cursor
     cur = mysql.connection.cursor()
 
-    # Get employee by id
-    cur.execute("SELECT e.name AS name, d.* "
-                "FROM employee e JOIN day_off d ON e.id = d.id_employee "
-                "WHERE MONTH(d.start) LIKE MONTH(NOW()) AND YEAR(d.start) LIKE YEAR(NOW()) "
-                "AND MONTH(d.end) LIKE MONTH(NOW()) AND YEAR(d.end) LIKE YEAR(NOW()) ")
-    employees = cur.fetchall()
-    return render_template('admin/list_leave_appliance.html', employees=employees)
+    Months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
+              'November', 'December']
+    if request.method == 'POST':
+        searched_month = request.form['month']
+        if searched_month != 'all':
+            # Get employees and their leave appliances  of a given month
+            cur.execute("SELECT e.name, d.* "
+                        "FROM employee e JOIN day_off d ON e.id = d.id_employee "
+                        "WHERE MONTH(d.start)=%s AND YEAR(d.start) LIKE YEAR(NOW()) "
+                        "AND MONTH(d.end)=%s AND YEAR(d.end) LIKE YEAR(NOW()) ",
+                        [searched_month, searched_month])
+            employees = cur.fetchall()
+            month = Months[int(searched_month) -1]
+        else:
+            cur.execute("SELECT e.name, d.* "
+                        "FROM employee e JOIN day_off d ON e.id = d.id_employee "
+                        "WHERE YEAR(d.start) LIKE YEAR(NOW()) "
+                        "AND YEAR(d.end) LIKE YEAR(NOW()) ")
+            employees = cur.fetchall()
+            month = 'all in 2022'
+    else:
+        # Get employees and their leave appliances of the current month by id
+        cur.execute("SELECT e.name AS name, d.* "
+                    "FROM employee e JOIN day_off d ON e.id = d.id_employee "
+                    "WHERE MONTH(d.start) LIKE MONTH(NOW()) AND YEAR(d.start) LIKE YEAR(NOW()) "
+                    "AND MONTH(d.end) LIKE MONTH(NOW()) AND YEAR(d.end) LIKE YEAR(NOW()) ")
+        employees = cur.fetchall()
+        # get curent time
+        today = datetime.now()
+        month = today.month
+        month = Months[month-1]
+
+    return render_template('admin/list_leave_appliance.html', employees=employees, month=month)
     cur.close()
 
 
@@ -414,12 +510,19 @@ def get_calendar():
     return render_template('admin/calendar.html')
 
 
-@app.route('/admin/notifications', methods=['GET'])
+@app.route('/admin/notifications', methods=['GET', 'POST'])
 @is_admin
 def get_notifications():
     # Create cursor
     cur = mysql.connection.cursor()
 
+    # if request.method == 'POST':
+    #     #from search field
+    #     email = request.form['email']
+    #
+    #     cur.execute("SELECT * FROM notifications WHERE email LIKE %%s% ", email)
+    #     notifications = cur.fetchall()
+    # else:
     # Get employee by id
     cur.execute("SELECT * FROM notifications ")
     notifications = cur.fetchall()
@@ -443,19 +546,27 @@ class AddForm(Form):
 @app.route('/admin/add_employee', methods=['GET', 'POST'])
 @is_admin
 def add_employee():
+    # Create cursor
+    cur = mysql.connection.cursor()
+
+    # Get employee by id
+    cur.execute("SELECT id, name FROM status")
+    status = cur.fetchall()
+
     form = AddForm(request.form)
     if request.method == 'POST' and form.validate():
         name = form.name.data
         email = form.email.data
         address = form.address.data
         phone = form.phone.data
+        id_status = request.form['id_status']
         password = sha256_crypt.encrypt(str(form.password.data))
 
         #Create cursor
         cur = mysql.connection.cursor()
 
         cur.execute("INSERT INTO employee(name, email,address, phone, password, id_status) "
-                    "VALUES(%s, %s, %s,%s,%s, 2)", (name, email, address, phone, password))
+                    "VALUES(%s, %s, %s,%s,%s, %s)", (name, email, address, phone, password, id_status))
 
         #commit to db
         mysql.connection.commit()
@@ -465,7 +576,7 @@ def add_employee():
 
         flash("An employee was added and can log in", 'success')
         return redirect(url_for('get_list_employee'))
-    return render_template('admin/add.html', form=form)
+    return render_template('admin/add.html', form=form, status=status)
 
 
 @app.route('/admin/logout', methods=['GET'])

@@ -1,0 +1,21 @@
+ {% extends 'layout.html' %}
+
+{% block title%}Take an advance{% endblock %}
+
+{% block content%}
+
+ <h1 class="col-lg-6 pl-0 mb-4">Take an advance</h1>
+ {%if employee.advance%}
+     <h4>Your actual sold : {{ employee.salary - employee.advance}}$</h4>
+ {%else%}
+         <h4>Your actual sold : {{ employee.salary}}$</h4>
+ {%endif%}
+ <form method="post" >
+ <div class="form-group">
+  <label for="advance">Amount to take :</label>
+  <input type="number" name="advance" id="advance" class="form-control">
+ </div>
+ <p><input type="submit" class="btn btn-primary" value="Submit"></p>
+</form>
+
+{% endblock %}

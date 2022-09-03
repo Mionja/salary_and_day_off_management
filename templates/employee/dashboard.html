@@ -13,12 +13,12 @@
                   <div class="card">
                     <div class="card-body">
                       <div class="d-flex flex-column align-items-center text-center">
-                        <img src="{{url_for('static', filename='img/face.png')}}" alt="Admin" class="rounded-circle" onclick="requestFullscreen(this)" width="150">
+                        <img src="{{url_for('static', filename='uploads/'+employee.photo)}}" alt="Admin" class="rounded-circle" onclick="requestFullscreen(this)" width="150">
                         <div class="mt-3">
                           <h4>{{employee.name}}</h4>
                           <p class="text-secondary mb-1">{{employee.s_name}}</p>
                           <p class="text-muted font-size-sm"> {{employee.address}}</p>
-                          <button class="btn btn-primary">Photo</button>
+                          <a href="edit_photo" class="btn btn-primary">Photo</a>
                           <a href="" class="btn btn-outline-primary">Edit links</a>
                         </div>
                       </div>
@@ -167,23 +167,32 @@
                         <div class="timeline-entry-inner">
                             <time datetime="2014-01-10T03:45" class="timeline-time"><span>30/09/2022</span><span>Today</span></time>
                             <div class="timeline-icon bg-orange"><i class="fa fa-paper-plane"></i></div>
-                          <div class="timeline-label bg-orange"><h4 class="timeline-title">About this month salary</h4>
+                            <div class="timeline-label bg-orange"><h4 class="timeline-title">About this month salary</h4>
 
-                            <p><img src="https://via.placeholder.com/45x45/" alt="" class="timeline-img pull-left">
-                                Total amount (NET): <br>
-                                <a href="#salary" class="text-light ml-5">
-                                    {% if (employee.s_day_off - n_leave)< 0%}
-                                        {{ employee.s_salary - ( (n_leave - employee.s_day_off)*(employee.s_salary/30) ) }}$
-                                        <span class="ml-3 text-dark">Why?</span>
-                                    {% else %}
-                                        {{employee.s_salary}}$
-                                    {% endif %}
-                                </a><br><hr>
-
-                            </p></div>
+                                <p><img src="https://via.placeholder.com/45x45/" alt="" class="timeline-img pull-left">
+                                    Total amount (NET): <br>
+                                    <a href="#salary" class="text-light ml-5">
+                                        {% if (employee.s_day_off - n_leave)< 0%}
+                                            {{ employee.s_salary - ( (n_leave - employee.s_day_off)*(employee.s_salary/30) ) }}$
+                                            <span class="ml-3 text-dark">Why?</span>
+                                        {% else %}
+                                            {{employee.s_salary}}$
+                                        {% endif %}
+                                    </a><br><hr>
+                                    {%if employee.advance%}
+                                            Taken in advance: {{employee.advance}}$ <br>
+                                            Remnant amount(basic): {{employee.s_salary - employee.advance}}$
+                                    {%else%}
+                                            Nothing taken in advance
+                                    {%endif%}
+                                </p>
+                                  <a href="/advance" class="btn btn-warning mt-3">Ask for an advance</a>
+                                </p>
+                            </div>
                         </div>
                     </article>
                     <article class="timeline-entry left-aligned">
+
                         <div class="timeline-entry-inner">
                             <time datetime="2014-01-10T03:45" class="timeline-time"><span>10/09/2022</span><span style="font-size:16px">:)</span></time>
                             <div class="timeline-icon bg-green"><i class="fa fa-group"></i></div>
