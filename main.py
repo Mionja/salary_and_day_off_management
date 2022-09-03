@@ -410,7 +410,7 @@ def get_list_employee():
 @app.route('/admin/detail_employee', methods=['GET', 'POST'])
 @is_admin
 def get_detail_employee():
-    if request.method == "POST":
+    if request.method == "POST" :
         # get hidden input id
         id = request.form['id']
 
@@ -434,7 +434,7 @@ def get_detail_employee():
 
         t = 0
         for leave in leaves:
-            t += ((leave['end'] - leave['start']).days)
+            t += (leave['end'] - leave['start']).days
 
         return render_template('admin/detail_employee.html', employee=employee, leaves=leaves, n_leave=t)
         # close connection
@@ -504,7 +504,7 @@ def add_employee():
         cur = mysql.connection.cursor()
 
         cur.execute("INSERT INTO employee(name, email,address, phone, password, id_status) "
-                    "VALUES(%s, %s, %s,%s,%s, 2)", (name, email, address, phone, password))
+                    "VALUES(%s, %s, %s,%s,%s, %s)", (name, email, address, phone, password, request.form['status']))
 
         # commit to db
         mysql.connection.commit()
