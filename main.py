@@ -163,20 +163,17 @@ def calendar():
 @is_logged_in
 def advance():
     cur = mysql.connection.cursor()
-    cur.execute("""SELECT e.*, s.* 
-                FROM employee e JOIN status s 
-                ON e.id_status = s.id 
-                WHERE e.id = %s;""",
-                [session['id']])
+    cur.execute("""SELECT e.*, s.* FROM employee e JOIN status s ON e.id_status = s.id WHERE e.id = %s;""",[session['id']])
     employee = cur.fetchone()
+
     if request.method == 'POST':
         advance = request.form['advance']
         if employee['advance']:
             _advance = employee['advance']
         else:
-            _advance = 0
+            _advance = 2
         if int(advance) <= employee['salary'] - _advance:
-            cur.execute("""UPDATE employee SET advance =advance + %s WHERE id = %s""", (int(advance), [session['id']]))
+            cur.execute("""UPDATE employee SET advance =advance + %s WHERE id = %s""", (advance, [session['id']]))
             # Commit to db
             mysql.connection.commit()
 
@@ -184,8 +181,7 @@ def advance():
             cur.close()
             flash('Alright, {}$ will be shared to your account, remanant amount : {}$'.format(advance,
                                                                                               employee['salary'] -
-                                                                                              _advance - int(
-                                                                                                  advance)), 'success')
+                                                                                              _advance - int(advance)), 'success')
         else:
             flash('You cannot take an amount above your sold', 'danger')
 
@@ -254,55 +250,66 @@ def accept():
     return render_template('employee/accept.html')
 
 
-#
-# class LinkForm(Form):
-#     website = StringField('Website', [validators.Length(min=5)])
-#     github = StringField('github', [validators.Length(min=5)])
-#     twitter = StringField('twitter', [validators.Length(min=5)])
-#     facebook = StringField('facebook', [validators.Length(min=5)])
-#
-#
-# @app.route('/edit_links', methods=['GET', 'POST'])
-# @is_logged_in
-# def edit_links():
-#     #Create cursor
-#     cur = mysql.connection.cursor()
-#
-#     #get employee by id
-#     result = cur.execute("SELECT * FROM links L JOIN employee E ON E.id_links = WHERE id = %s", [session['id']])
-#
-#     employee = cur.fetchone()
-#
-#     #get form
-#     form = LinkForm(request.form)
-#
-#     #populate employee from field
-#     form.website.data = employee['website']
-#     form.github.data = employee['github']
-#     form.twitter.data = employee['twitter']
-#     form.facebook.data = employee['facebook']
-#
-#     if request.method == 'POST' and form.validate():
-#         website = request.form['website']
-#         github = request.form['github']
-#         twitter = request.form['twitter']
-#         facebook = request.form['facebook']
-#
-#         #Create cursor
-#         cur = mysql.connection.cursor()
-#
-#         #execute
-#         cur.execute("UPDATE employee SET website=%s, github=%s, twitter=%s, facebook=%s WHERE id=%s", (website, github, twitter, facebook, session['id']))
-#
-#         #Commit to db
-#         mysql.connection.commit()
-#
-#         #close connection
-#         cur.close()
-#
-#         flash('Peronnal links edited', 'success')
-#         return redirect(url_for('dashboard'))
-#     return render_template('edit_links.html', form=form)
+class LinkForm(Form):
+    website = StringField('Website', [validators.Length(min=5)])
+    github = StringField('github', [validators.Length(min=5)])
+    twitter = StringField('twitter', [validators.Length(min=5)])
+    facebook = StringField('facebook', [validators.Length(min=5)])
+
+
+@app.route('/edit_links', methods=['GET', 'POST'])
+@is_logged_in
+def edit_links():
+    #Create cursor
+    cur = mysql.connection.cursor()
+
+    #get employee by id
+    result = cur.execute("SELECT * FROM links WHERE id_employee = %s", [session['id']])
+
+    employee = cur.fetchone()
+
+    #get form
+    form = LinkForm(request.form)
+
+    #populate employee from field
+    if employee:
+        form.website.data = employee['website']
+        form.github.data = employee['github']
+        form.twitter.data = employee['twitter']
+        form.facebook.data = employee['facebook']
+    else:
+        pass
+
+    if request.method == 'POST' and form.validate():
+        website = request.form['website']
+        github = request.form['github']
+        twitter = request.form['twitter']
+        facebook = request.form['facebook']
+
+        #Create cursor
+        cur = mysql.connection.cursor()
+
+        #execute
+        if employee:
+            cur.execute("UPDATE links"  
+                          "SET website=%s, github=%s, twitter=%s, facebook=%s "
+                         "WHERE id_employee=%s",
+                        (website, github, twitter, facebook, session['id']))
+        else:
+            cur.execute("INSERT INTO links(website,github, twitter, facebook, id_employee)"
+                        "VALUES (%s,%s,%s,%s,%s)",
+                        (website, github, twitter, facebook, session['id']))
+        #Commit to db
+        mysql.connection.commit()
+
+        #close connection
+        cur.close()
+
+        flash('Peronnal links edited', 'success')
+        return redirect(url_for('dashboard'))
+    return render_template('employee/edit_links.html', form=form)
+
+
 @app.route('/edit_photo', methods=['GET', 'POST'])
 @is_logged_in
 def edit_photo():
