@@ -192,6 +192,7 @@ def leave():
         today = datetime.now()
         month = today.month
         year = today.year
+        day = today.day
 
         #get form field
         start = request.form['start']
@@ -201,16 +202,30 @@ def leave():
         if reason == "other":
             reason = request.form['o_reason']
             if reason == '':
-                error = "You need to fill the other reason field because you selected other as your reason"
+                error = "Please fill the other reason field"
                 return render_template('employee/leave_form.html', error=error)
 
         if end > start:
+            input_year = int(start[0]+start[1]+start[2]+start[3])
+            input_month = int(start[5]+start[6])
+            input_day = int(start[8] + start[9])
+
+            if input_year < year or input_month < month or input_day <= day:
+                error = "Please insert a valid date"
+                return render_template('employee/leave_form.html', error=error)
+
             # Create cursor
             cur = mysql.connection.cursor()
 
             id_employee = cur.execute("SELECT id_employee FROM day_off "
                                       " WHERE MONTH(start) LIKE MONTH(%s) AND YEAR(start) LIKE YEAR(%s) "
-                                      " AND MONTH(end) LIKE MONTH(%s) AND YEAR(end) LIKE YEAR(%s) ", [start, start, end, end])
+                                      " AND MONTH(end) LIKE MONTH(%s) AND YEAR(end) LIKE YEAR(%s) ",
+                                      [start, start, end, end])
+            # start_end = cur.execute("SELECT * FROM day_off "
+            #                           " WHERE MONTH(start) LIKE MONTH(%s) AND YEAR(start) LIKE YEAR(%s) "
+            #                           " AND MONTH(end) LIKE MONTH(%s) AND YEAR(end) LIKE YEAR(%s) ",
+            #                           [start, start, end, end])
+            # if start_end['start'] == T and start_end['id_employee']==session['id']: this is for if that same person is taking the same date of leaving
             if id_employee < 6:
             #if day_off['id_employee'] < 6:
                 #Add everything in the table day_off
@@ -222,6 +237,7 @@ def leave():
 
                 # close the connection
                 cur.close()
+                flash('From {} to {}, you will be taking your leave'.format(start, end), 'success')
                 return redirect(url_for('accept'))
             else:
                 return render_template('employee/decline.html')
