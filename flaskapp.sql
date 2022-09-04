@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Sep 04, 2022 at 06:01 PM
+-- Generation Time: Sep 04, 2022 at 06:11 PM
 -- Server version: 5.7.36
 -- PHP Version: 7.4.26
 
@@ -49,8 +49,7 @@ INSERT INTO `day_off` (`id`, `start`, `end`, `reason`, `id_employee`) VALUES
 (5, '2022-09-22', '2022-09-23', 'casual', 8),
 (6, '2022-09-01', '2022-09-02', 'casual', 8),
 (7, '2022-11-03', '2022-11-05', 'casual', 1),
-(8, '2022-12-18', '2022-12-20', 'Holidays', 2),
-(11, '2022-12-06', '2022-12-30', 'casual', 2);
+(8, '2022-12-18', '2022-12-20', 'Holidays', 2);
 
 -- --------------------------------------------------------
 
