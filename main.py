@@ -129,9 +129,8 @@ def dashboard():
     # Create cursor
     cur = mysql.connection.cursor()
 
-    # Get employee by id
     employee_data = cur.execute("""SELECT e.*, s.name AS s_name, s.salary AS s_salary, s.day_off AS s_day_off, s.cnaps,
-                                      s.osti, s.irsa
+                                      s.osti, s.irsa 
                                       FROM employee e 
                                       JOIN status s 
                                       ON e.id_status = s.id
@@ -144,11 +143,14 @@ def dashboard():
                                "ON d.id_employee = e.id WHERE e.id = %s", [session['id']])
     leaves = cur.fetchall()
 
+    links = cur.execute("SELECT * FROM links WHERE id_employee=%s", [session['id']])
+    links = cur.fetchone()
+
     t=0
     for leave in leaves:
         t += ((leave['end']-leave['start']).days)
 
-    return render_template('employee/dashboard.html', employee=employee, leaves=leaves, n_leave=t)
+    return render_template('employee/dashboard.html', employee=employee, leaves=leaves, n_leave=t, links=links)
     #close connection
     cur.close()
 
@@ -212,18 +214,9 @@ def leave():
             # Create cursor
             cur = mysql.connection.cursor()
 
-            #get all from day_off in the current month
-            # day_off = cur.execute(" SELECT * FROM day_off "
-            #                       " WHERE MONTH(start) LIKE MONTH(NOW()) AND YEAR(start) LIKE YEAR(NOW()) "
-            #                       " AND MONTH(end) LIKE MONTH(NOW()) AND YEAR(end) LIKE YEAR(NOW()) ")
-            # #get status of the employee
-            # status = cur.execute("SELECT s.name FROM status s "
-            #                      "JOIN employee e "
-            #                      "ON e.id_status=s.id "
-            #                      "WHERE e.id=%", (session['id']))
             id_employee = cur.execute("SELECT id_employee FROM day_off "
-                                      " WHERE MONTH(start) LIKE MONTH(NOW()) AND YEAR(start) LIKE YEAR(NOW()) "
-                                      " AND MONTH(end) LIKE MONTH(NOW()) AND YEAR(end) LIKE YEAR(NOW()) ")
+                                      " WHERE MONTH(start) LIKE MONTH(%s) AND YEAR(start) LIKE YEAR(%s) "
+                                      " AND MONTH(end) LIKE MONTH(%s) AND YEAR(end) LIKE YEAR(%s) ", [start, start, end, end])
             if id_employee < 6:
             #if day_off['id_employee'] < 6:
                 #Add everything in the table day_off
@@ -291,10 +284,8 @@ def edit_links():
 
         #execute
         if employee:
-            cur.execute("UPDATE links"  
-                          "SET website=%s, github=%s, twitter=%s, facebook=%s "
-                         "WHERE id_employee=%s",
-                        (website, github, twitter, facebook, session['id']))
+            cur.execute("UPDATE links SET website=%s, github=%s, twitter=%s, facebook=%s "
+                         "WHERE id_employee=%s", (website, github, twitter, facebook, session['id']))
         else:
             cur.execute("INSERT INTO links(website,github, twitter, facebook, id_employee)"
                         "VALUES (%s,%s,%s,%s,%s)",
