@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Sep 04, 2022 at 02:56 AM
+-- Generation Time: Sep 04, 2022 at 06:01 PM
 -- Server version: 5.7.36
 -- PHP Version: 7.4.26
 
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `day_off` (
   `id_employee` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_day_off_id_employee` (`id_employee`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `day_off`
@@ -48,7 +48,9 @@ INSERT INTO `day_off` (`id`, `start`, `end`, `reason`, `id_employee`) VALUES
 (4, '2022-09-13', '2022-09-15', 'sick', 2),
 (5, '2022-09-22', '2022-09-23', 'casual', 8),
 (6, '2022-09-01', '2022-09-02', 'casual', 8),
-(7, '2022-11-03', '2022-11-05', 'casual', 1);
+(7, '2022-11-03', '2022-11-05', 'casual', 1),
+(8, '2022-12-18', '2022-12-20', 'Holidays', 2),
+(11, '2022-12-06', '2022-12-30', 'casual', 2);
 
 -- --------------------------------------------------------
 
@@ -99,14 +101,15 @@ CREATE TABLE IF NOT EXISTS `links` (
   `id_employee` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_linkd_id_employee` (`id_employee`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `links`
 --
 
 INSERT INTO `links` (`id`, `website`, `github`, `twitter`, `facebook`, `id_employee`) VALUES
-(1, 'www.website', 'Mionja', 'Mio_something', 'Mionja Ranaivoarison', 1);
+(1, 'www.website', 'Mionja', 'Mio_something', 'Mionja Ranaivoarison', 1),
+(2, 'www.test.com', 'gardian', 'twiter', 'test facebook', 8);
 
 -- --------------------------------------------------------
 
