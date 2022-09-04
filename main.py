@@ -155,12 +155,6 @@ def dashboard():
     cur.close()
 
 
-@app.route('/calendar', methods=['GET'])
-@is_logged_in
-def calendar():
-    return render_template('employee/calendar.html')
-
-
 @app.route('/advance', methods=['GET', 'POST'])
 @is_logged_in
 def advance():
@@ -437,11 +431,12 @@ def get_detail_employee():
     cur = mysql.connection.cursor()
 
     # Get employee by id
-    employee_data = cur.execute("""SELECT e.*, s.name AS s_name, s.salary AS s_salary, s.day_off AS s_day_off 
-                                   FROM employee e 
-                                   JOIN status s 
-                                   ON e.id_status = s.id
-                                   WHERE e.id = %s""", [id])
+    employee_data = cur.execute("""SELECT e.*, s.name AS s_name, s.salary AS s_salary, s.day_off AS s_day_off, s.cnaps,
+                                          s.osti, s.irsa 
+                                          FROM employee e 
+                                          JOIN status s 
+                                          ON e.id_status = s.id
+                                          WHERE e.id = %s""", [id])
     employee = cur.fetchone()
 
     day_off_data = cur.execute("SELECT d.* "
@@ -500,12 +495,6 @@ def get_list_leave_appliances():
 
     return render_template('admin/list_leave_appliance.html', employees=employees, month=month)
     cur.close()
-
-
-@app.route('/admin/calendar_admin', methods=['GET'])
-@is_admin
-def get_calendar():
-    return render_template('admin/calendar.html')
 
 
 @app.route('/admin/notifications', methods=['GET', 'POST'])

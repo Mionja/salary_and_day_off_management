@@ -172,15 +172,14 @@
                                 <p><img src="https://via.placeholder.com/45x45/" alt="" class="timeline-img pull-left">
                                     Total amount (NET): <br>
                                     <a href="#salary" class="text-light ml-5">
-                                        {% if (employee.s_day_off - n_leave)< 0%}
-                                            {{ employee.s_salary - ( (n_leave - employee.s_day_off)*(employee.s_salary/30) ) }}$
-                                        {% else %}
-                                            {{employee.s_salary}}$
-                                        {% endif %}
+                                           {% if (employee.s_day_off - n_leave)< 0%}
+                                                {{ employee.s_salary - ( (n_leave - employee.s_day_off)*(employee.s_salary/30) + (employee.s_salary * employee.osti /100) + (employee.s_salary * employee.irsa /100) + (employee.s_salary * employee.cnaps /100))}}$
+                                            {% else %}
+                                                {{ employee.s_salary - ( (employee.s_salary * employee.osti /100) + (employee.s_salary * employee.irsa /100) + (employee.s_salary * employee.cnaps /100)  )}}$
+                                            {% endif %}
                                     </a><br><hr>
                                     {%if employee.advance%}
                                             Taken in advance: {{employee.advance}}$ <br>
-                                            Remnant amount(basic): {{employee.s_salary - employee.advance}}$
                                     {%else%}
                                             Nothing taken in advance
                                     {%endif%}
@@ -220,7 +219,7 @@
                             <div class="timeline-icon bg-violet"><i class="fa fa-exclamation"></i></div>
                                 <div class="timeline-label"><h4 class="timeline-title">Next month salary</h4>
                             <pre>
-Amount: {{employee.s_salary}}$
+Amount: {{ employee.s_salary - ( (employee.s_salary * employee.osti /100) + (employee.s_salary * employee.irsa /100) + (employee.s_salary * employee.cnaps /100))}}$
                                 <hr>
 Bonus:
     H_sup:0$
@@ -240,6 +239,7 @@ Bonus:
         <th>IRSA({{employee.irsa}}%)</th>
         <th>Cnaps({{employee.cnaps}}%)</th>
         <th>Ostie({{employee.osti}}%)</th>
+        <th>Advance</th>
         <th>Leave without sold</th>
         <th>H_sup</th>
         <th>Final(net)</th>
@@ -250,6 +250,13 @@ Bonus:
         <td>{{ (employee.s_salary * employee.irsa /100) }}</td>
         <td>{{ (employee.s_salary * employee.cnaps /100) }}</td>
         <td>{{ (employee.s_salary * employee.osti /100) }}</td>
+        <td>
+            {% if employee.advance %}
+                {{ employee.advance }}
+            {% else %}
+                0
+            {% endif %}
+        </td>
         <td>
             {% if (employee.s_day_off - n_leave)< 0%}
                 {{ (n_leave - employee.s_day_off)*(employee.s_salary/30) }}

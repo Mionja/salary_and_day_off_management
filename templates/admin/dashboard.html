@@ -3,5 +3,16 @@
 {% block title%}Dashboard{% endblock %}
 
 {% block content%}
-<h1>Dashboard of the admin</h1>
+<div class="jumbotron text-center">
+    <h1>Welcome admin! </h1>
+</div>
+<div class="row">
+    <div class="col-4">
+    </div>
+    <div class="col-6">
+        <img src="{{url_for('static', filename='img/cloud.png')}}" alt="Hello" width="60%">
+        <br><code class="ml-5 pl-4">No internet connexion</code>
+    </div>
+</div>
+
 {% endblock %}
