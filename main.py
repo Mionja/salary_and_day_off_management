@@ -167,21 +167,22 @@ def advance():
         if employee['advance']:
             _advance = employee['advance']
         else:
-            _advance = 2
-        if int(advance) <= employee['salary'] - _advance:
+            _advance = 0
+
+        if int(advance) < 0:
+            flash('You cannot take an amount below 0', 'danger')
+        elif int(advance) <= employee['salary'] - _advance:
             cur.execute("""UPDATE employee SET advance =advance + %s WHERE id = %s""", (advance, [session['id']]))
             # Commit to db
             mysql.connection.commit()
 
             # close connection
             cur.close()
-            flash('Alright, {}$ will be shared to your account, remanant amount : {}$'.format(advance,
-                                                                                              employee['salary'] -
-                                                                                              _advance - int(advance)), 'success')
+            flash('Alright, {}$ will be shared to your account'.format(advance), 'success')
         else:
             flash('You cannot take an amount above your sold', 'danger')
 
-    return render_template('employee/advance.html', employee=employee)
+    return render_template('employee/advance.html')
 
 
 @app.route('/leave', methods=['GET', 'POST'])
@@ -221,13 +222,14 @@ def leave():
                                       " WHERE MONTH(start) LIKE MONTH(%s) AND YEAR(start) LIKE YEAR(%s) "
                                       " AND MONTH(end) LIKE MONTH(%s) AND YEAR(end) LIKE YEAR(%s) ",
                                       [start, start, end, end])
-            # start_end = cur.execute("SELECT * FROM day_off "
-            #                           " WHERE MONTH(start) LIKE MONTH(%s) AND YEAR(start) LIKE YEAR(%s) "
-            #                           " AND MONTH(end) LIKE MONTH(%s) AND YEAR(end) LIKE YEAR(%s) ",
-            #                           [start, start, end, end])
-            # if start_end['start'] == T and start_end['id_employee']==session['id']: this is for if that same person is taking the same date of leaving
+            start_end = cur.execute("SELECT * FROM day_off "
+                                      " WHERE MONTH(start) LIKE MONTH(%s) AND YEAR(start) LIKE YEAR(%s) "
+                                      " AND MONTH(end) LIKE MONTH(%s) AND YEAR(end) LIKE YEAR(%s) ",
+                                      [start, start, end, end])
+            if start_end['start'] == start and start_end['id_employee']==session['id']:
+                error = "You've already taken that leave"
+                return render_template('employee/leave_form.html', error=error)
             if id_employee < 6:
-            #if day_off['id_employee'] < 6:
                 #Add everything in the table day_off
                 cur.execute("INSERT INTO day_off(start, end, reason, id_employee) "
                             "VALUES(%s, %s, %s, %s)", (start, end, reason, session['id']))
@@ -481,7 +483,8 @@ def get_list_leave_appliances():
               'November', 'December']
     if request.method == 'POST':
         searched_month = request.form['month']
-        if searched_month != 'all':
+
+        if searched_month != 'all' and searched_month != '':
             # Get employees and their leave appliances  of a given month
             cur.execute("SELECT e.name, d.* "
                         "FROM employee e JOIN day_off d ON e.id = d.id_employee "
@@ -504,10 +507,7 @@ def get_list_leave_appliances():
                     "WHERE MONTH(d.start) LIKE MONTH(NOW()) AND YEAR(d.start) LIKE YEAR(NOW()) "
                     "AND MONTH(d.end) LIKE MONTH(NOW()) AND YEAR(d.end) LIKE YEAR(NOW()) ")
         employees = cur.fetchall()
-        # get curent time
-        today = datetime.now()
-        month = today.month
-        month = Months[month-1]
+        month = 'this month'
 
     return render_template('admin/list_leave_appliance.html', employees=employees, month=month)
     cur.close()
